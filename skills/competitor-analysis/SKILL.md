@@ -30,6 +30,19 @@ If niche or document link is missing, read `Projects/<client>/client-info.md` fi
 
 If required data is still missing after reading the client folder, ask only for the missing fields.
 
+## Mandatory execution order
+
+Do not answer as a general chat assistant first.
+Do not jump straight to asking for generic access or restating the task.
+Before any substantive reply, do this in order:
+
+1. Open `Projects/<client>/`.
+2. Read `client-info.md` first.
+3. Read any other relevant client files if present.
+4. Read `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/reglament.md`.
+5. Read `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/template.md`.
+6. Only then decide whether any clarification is still required.
+
 ## Workflow
 
 1. Parse the user request.
@@ -62,6 +75,18 @@ Before writes, verify access with `meta`.
 Do not create a new OAuth flow.
 Do not re-implement auth.
 
+## Document link handling
+
+When the user provides `Документ:`:
+
+1. Do not assume it is a Google Doc text document.
+2. First determine whether it is a Google Sheet.
+3. For the current MVP, prefer Google Sheets because the local integration already supports Sheets writes.
+4. If the link is a Google Doc instead of a Google Sheet, do not fall into a generic access-request loop. First return a short clarification that the current automated write path is built around Google Sheets and ask whether to:
+   - switch to Google Sheets for the run, or
+   - proceed with local-only analysis output.
+5. If it is a Google Sheet, use the local wrapper and verify access first.
+
 ## Output expectations
 
 Produce:
@@ -78,3 +103,4 @@ Produce:
 Be concise in chat.
 Do the work in files and the target document.
 Return a short status summary plus where the saved local artifact lives.
+Do not respond with a generic assistant-style plan before reading the required repository files.

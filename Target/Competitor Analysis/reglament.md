@@ -56,7 +56,7 @@ Important:
 - do not start a new OAuth flow
 - first verify access with `meta`
 
-Note: the current local integration is for Google Sheets via the existing wrapper. If the owner provides a Google Docs link instead of a Sheet, the agent should either ask for a Google Sheet link or confirm the intended write path before proceeding.
+Note: the current local integration is for Google Sheets via the existing wrapper. If the owner provides a Google Docs link instead of a Sheet, the agent must not drift into a generic assistant response. It should first state briefly that the automated write path currently targets Google Sheets and then ask whether to switch the run to a Google Sheet or proceed with local-only output.
 
 ## Agent workflow
 
@@ -68,16 +68,17 @@ Note: the current local integration is for Google Sheets via the existing wrappe
    - niche
    - target document link
 5. Open this reglamet and follow it strictly.
-6. Search the web for relevant niche cases using queries like:
+6. Only after reading the client folder and this reglamet may the agent ask clarifying questions.
+7. Search the web for relevant niche cases using queries like:
    - `Кейсы "<ниша>"`
    - `кейсы таргет <ниша>`
    - `кейсы рекламы <ниша>`
    - `лидогенерация <ниша> кейс`
-7. Collect up to 20 relevant sources.
-8. Add the found case links and short notes into the target Google sheet/document.
-9. Analyze the collected materials.
-10. Write recommendations into the same target document.
-11. Save a local copy of the result or notes into:
+8. Collect up to 20 relevant sources.
+9. Add the found case links and short notes into the target Google sheet/document.
+10. Analyze the collected materials.
+11. Write recommendations into the same target document.
+12. Save a local copy of the result or notes into:
    - `Projects/<client>/target/competitor-analysis/`
 
 ## Source selection rules
