@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PANDAVKADS — Landing Page</title>
+  <meta name="description" content="PANDAVKADS — разработка, digital-решения и системный рост для бизнеса." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-soft: #121932;
+      --card: rgba(255,255,255,0.06);
+      --line: rgba(255,255,255,0.12);
+      --text: #f5f7ff;
+      --muted: #b8c0e0;
+      --accent: #7c5cff;
+      --accent-2: #29d3c0;
+      --shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(124, 92, 255, 0.25), transparent 30%),
+        radial-gradient(circle at top right, rgba(41, 211, 192, 0.18), transparent 28%),
+        linear-gradient(180deg, #0b1020 0%, #0d1328 45%, #09101d 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(11, 16, 32, 0.7);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 0;
+      gap: 20px;
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-weight: 700;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    .button-primary {
+      background: linear-gradient(135deg, var(--accent), #9d7cff);
+      color: white;
+      box-shadow: 0 12px 30px rgba(124, 92, 255, 0.35);
+    }
+
+    .button-secondary {
+      border-color: var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+      opacity: 0.96;
+    }
+
+    .hero {
+      padding: 88px 0 56px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--accent-2);
+      font-weight: 700;
+      font-size: 0.88rem;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-size: clamp(2.5rem, 5vw, 4.8rem);
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin: 0 0 30px;
+      color: var(--muted);
+      font-size: 1.08rem;
+      max-width: 680px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 36px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat,
+    .card,
+    .feature,
+    .cta-box {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat {
+      padding: 18px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .card {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -30% auto auto -10%;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124, 92, 255, 0.22), transparent 70%);
+    }
+
+    .card h3 {
+      margin: 0 0 14px;
+      font-size: 1.4rem;
+    }
+
+    .card p,
+    .feature p,
+    .section-subtitle,
+    .list li,
+    .muted {
+      color: var(--muted);
+    }
+
+    .list {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .list li {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .list li:last-child { border-bottom: 0; }
+
+    section {
+      padding: 40px 0;
+    }
+
+    .section-head {
+      margin-bottom: 22px;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.8rem, 3vw, 3rem);
+      letter-spacing: -0.03em;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .feature {
+      padding: 24px;
+    }
+
+    .feature .icon {
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(124, 92, 255, 0.22), rgba(41, 211, 192, 0.22));
+      margin-bottom: 18px;
+      font-size: 1.4rem;
+    }
+
+    .feature h3 {
+      margin: 0 0 12px;
+      font-size: 1.15rem;
+    }
+
+    .process {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .step {
+      padding: 22px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .step-number {
+      display: inline-flex;
+      width: 34px;
+      height: 34px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      font-weight: 800;
+      background: rgba(124, 92, 255, 0.18);
+      color: #d9ceff;
+      margin-bottom: 14px;
+    }
+
+    .step h3 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+    }
+
+    .cta {
+      padding: 54px 0 80px;
+    }
+
+    .cta-box {
+      padding: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .footer {
+      padding: 0 0 42px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 960px) {
+      .hero-grid,
+      .features,
+      .process,
+      .cta-box {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        width: min(100% - 28px, 1120px);
+      }
+
+      .hero {
+        padding-top: 56px;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">PANDAVKADS</div>
+      <nav class="nav-links">
+        <a href="#services">Услуги</a>
+        <a href="#process">Процесс</a>
+        <a href="#about">О нас</a>
+        <a href="#contact" class="button button-secondary">Связаться</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow">Разработка • Дизайн • Digital Growth</div>
+          <h1>Landing page для PANDAVKADS, который выглядит уверенно и продаёт без лишнего шума.</h1>
+          <p>
+            Мы помогаем упаковывать идеи в понятные digital-решения: от лендингов и сайтов до продуктовой подачи,
+            маркетинговых гипотез и системной визуальной коммуникации.
+          </p>
+          <div class="hero-actions">
+            <a href="#contact" class="button button-primary">Обсудить проект</a>
+            <a href="#services" class="button button-secondary">Посмотреть возможности</a>
+          </div>
+          <div class="stats">
+            <div class="stat">
+              <strong>01</strong>
+              <span>Фокус на понятной подаче и конверсии</span>
+            </div>
+            <div class="stat">
+              <strong>02</strong>
+              <span>Аккуратный визуал без перегруза</span>
+            </div>
+            <div class="stat">
+              <strong>03</strong>
+              <span>Гибкая база для дальнейшего роста</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="card" id="about">
+          <h3>PANDAVKADS</h3>
+          <p>
+            Команда, которая соединяет стратегию, креатив и реализацию. Не просто «делаем сайт», а собираем
+            внятную точку входа в ваш продукт или услугу.
+          </p>
+          <ul class="list">
+            <li>Лендинги под оффер, продукт или услугу</li>
+            <li>Презентационная упаковка бренда</li>
+            <li>Структура, тексты и визуальная логика</li>
+            <li>Подготовка к трафику, заявкам и масштабированию</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="services">
+      <div class="container">
+        <div class="section-head">
+          <h2>Что можно решить этим лендингом</h2>
+          <p class="section-subtitle">
+            Страница может стать стартовой точкой для презентации агентства, лидогенерации или быстрого теста оффера.
+          </p>
+        </div>
+
+        <div class="features">
+          <article class="feature">
+            <div class="icon">⚡</div>
+            <h3>Быстрый запуск</h3>
+            <p>Простая статическая структура, которую легко задеплоить и использовать как основу под дальнейшую сборку.</p>
+          </article>
+          <article class="feature">
+            <div class="icon">🎯</div>
+            <h3>Ясный оффер</h3>
+            <p>Акцент на том, что именно делает PANDAVKADS и зачем клиенту оставлять заявку здесь и сейчас.</p>
+          </article>
+          <article class="feature">
+            <div class="icon">🧩</div>
+            <h3>Гибкая масштабируемость</h3>
+            <p>Лендинг можно дорастить до многостраничного сайта, кейсового блока, формы, CRM-интеграции и аналитики.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="process">
+      <div class="container">
+        <div class="section-head">
+          <h2>Как мы обычно строим работу</h2>
+          <p class="section-subtitle">Без хаоса: сначала смысл, потом структура, потом визуал и запуск.</p>
+        </div>
+        <div class="process">
+          <div class="step">
+            <div class="step-number">1</div>
+            <h3>Смысл</h3>
+            <p>Формулируем позиционирование, задачу страницы и главный оффер.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <h3>Структура</h3>
+            <p>Собираем блоки, сценарий чтения и логику CTA.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <h3>Дизайн</h3>
+            <p>Упаковываем страницу в визуальный стиль, который выглядит современно и уверенно.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <h3>Запуск</h3>
+            <p>Подготавливаем к публикации, трафику, аналитике и дальнейшим улучшениям.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta" id="contact">
+      <div class="container">
+        <div class="cta-box">
+          <div>
+            <h2>Нужен современный landing page под PANDAVKADS?</h2>
+            <p class="muted">Этот шаблон уже можно брать как основу и дальше наполнять реальным контентом, кейсами и контактами.</p>
+          </div>
+          <a class="button button-primary" href="mailto:hello@pandavkads.com">Написать нам</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">© PANDAVKADS — landing page concept.</div>
+  </footer>
+</body>
+</html>
