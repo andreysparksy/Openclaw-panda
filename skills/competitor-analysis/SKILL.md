@@ -13,6 +13,7 @@ Read and use these paths:
 
 - client data: `/root/openclaw/Openclaw-panda/Projects/<client>/`
 - workflow reglamet: `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/reglament.md`
+- document formatting reglamet: `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/google-doc-format.md`
 - output template: `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/template.md`
 
 ## Minimum input handling
@@ -40,8 +41,9 @@ Before any substantive reply, do this in order:
 2. Read `client-info.md` first.
 3. Read any other relevant client files if present.
 4. Read `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/reglament.md`.
-5. Read `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/template.md`.
-6. Only then decide whether any clarification is still required.
+5. Read `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/google-doc-format.md`.
+6. Read `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/template.md`.
+7. Only then decide whether any clarification is still required.
 
 ## Workflow
 
@@ -50,9 +52,10 @@ Before any substantive reply, do this in order:
 3. Read `client-info.md` first.
 4. Read any other relevant client files if present.
 5. Read `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/reglament.md`.
-6. Follow that reglamet strictly.
-7. Use `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/template.md` as the output shape.
-8. Save local artifacts into `Projects/<client>/target/competitor-analysis/`.
+6. Read `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/google-doc-format.md`.
+7. Follow those reglamets strictly.
+8. Use `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/template.md` as the output shape.
+9. Save local artifacts into `Projects/<client>/target/competitor-analysis/`.
 
 ## Google integration
 

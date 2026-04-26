@@ -88,7 +88,8 @@ If access fails with 403:
    - niche
    - target document link
 5. Open this reglamet and follow it strictly.
-6. Only after reading the client folder and this reglamet may the agent ask clarifying questions.
+6. Read `/root/openclaw/Openclaw-panda/Target/Competitor Analysis/google-doc-format.md` before writing the final document content.
+7. Only after reading the client folder and these formatting rules may the agent ask clarifying questions.
 7. Search the web for relevant niche cases using queries like:
    - `Кейсы "<ниша>"`
    - `кейсы таргет <ниша>`
@@ -100,8 +101,9 @@ If access fails with 403:
    - `/root/openclaw/scripts/docs meta <document_id>`
 11. Add the found case links and short notes into the target Google document.
 12. Analyze the collected materials.
-13. Write recommendations into the same target document.
-14. Save a local copy of the result or notes into:
+13. Structure the final document according to `google-doc-format.md`.
+14. Write recommendations into the same target document.
+15. Save a local copy of the result or notes into:
    - `Projects/<client>/target/competitor-analysis/`
 
 ## Source selection rules
