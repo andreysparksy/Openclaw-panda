@@ -56,36 +56,42 @@ Before any substantive reply, do this in order:
 
 ## Google integration
 
-A local Google Sheets integration already exists on this machine.
-Use the canonical wrapper:
+A local Google Docs integration already exists on this machine.
+Use only the canonical wrapper:
 
 ```bash
-/root/openclaw/scripts/sheets <command> ...
+/root/openclaw/scripts/docs <command> ...
 ```
 
-Available commands:
+Configured local paths:
+- wrapper: `/root/openclaw/scripts/docs`
+- helper: `/root/.openclaw/workspace/google_docs_tool.py`
+- python venv: `/root/openclaw/.venv`
+- credentials: `/root/openclaw/secrets/google-service-account.json`
+- service account: `openclaw-sheets@openclaw-sheets-492416.iam.gserviceaccount.com`
 
-- `meta <spreadsheet_id>`
-- `read <spreadsheet_id> <range>`
-- `write <spreadsheet_id> <range> <json_rows>`
-- `clear <spreadsheet_id> <range>`
-- `add-sheet <spreadsheet_id> <title>`
+Supported commands include:
+- `meta <document_id>`
+- `get-text <document_id>`
+- `append-text <document_id> 'text\n'`
+- `prepend-text <document_id> 'text\n'`
 
 Before writes, verify access with `meta`.
 Do not create a new OAuth flow.
 Do not re-implement auth.
+Do not look for another credentials path.
 
 ## Document link handling
 
 When the user provides `Документ:`:
 
-1. Do not assume it is a Google Doc text document.
-2. First determine whether it is a Google Sheet.
-3. For the current MVP, prefer Google Sheets because the local integration already supports Sheets writes.
-4. If the link is a Google Doc instead of a Google Sheet, do not fall into a generic access-request loop. First return a short clarification that the current automated write path is built around Google Sheets and ask whether to:
-   - switch to Google Sheets for the run, or
-   - proceed with local-only analysis output.
-5. If it is a Google Sheet, use the local wrapper and verify access first.
+1. Treat it as a Google Docs workflow by default.
+2. Extract the `document_id` from a URL like `https://docs.google.com/document/d/<document_id>/edit`.
+3. Verify access first with `/root/openclaw/scripts/docs meta <document_id>`.
+4. If access works, continue with the local docs wrapper.
+5. If access fails with 403, ask the user to share the document with `openclaw-sheets@openclaw-sheets-492416.iam.gserviceaccount.com`.
+6. Do not fall into a generic “Google Docs is not connected” response before checking the local wrapper.
+7. Before writing, prefer safe append-style writes unless a different write mode is clearly intended.
 
 ## Output expectations
 

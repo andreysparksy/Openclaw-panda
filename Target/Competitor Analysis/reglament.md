@@ -36,27 +36,47 @@ Example:
 
 If the full format is not provided, the agent must try to recover the missing fields from `Projects/<client>/client-info.md`. If required fields are still missing, the agent must ask the user to provide them.
 
-## Google document / sheet integration available in this environment
+## Google Docs integration available in this environment
 
-A local Google integration already exists on this machine via the canonical wrapper:
+A local Google Docs integration already exists on this machine.
+Use only the canonical wrapper:
 
 ```bash
-/root/openclaw/scripts/sheets <command> ...
+/root/openclaw/scripts/docs <command> ...
 ```
 
-Available commands:
-- `meta <spreadsheet_id>`
-- `read <spreadsheet_id> <range>`
-- `write <spreadsheet_id> <range> <json_rows>`
-- `clear <spreadsheet_id> <range>`
-- `add-sheet <spreadsheet_id> <title>`
+Local integration paths already configured:
+- wrapper: `/root/openclaw/scripts/docs`
+- helper: `/root/.openclaw/workspace/google_docs_tool.py`
+- python venv: `/root/openclaw/.venv`
+- credentials: `/root/openclaw/secrets/google-service-account.json`
+- service account: `openclaw-sheets@openclaw-sheets-492416.iam.gserviceaccount.com`
 
-Important:
+Supported commands:
+- `meta <document_id>`
+- `get-text <document_id>`
+- `append-text <document_id> 'text\n'`
+- `prepend-text <document_id> 'text\n'`
+- `style-range ...`
+- `bold-range ...`
+
+Important rules:
 - use the local wrapper instead of re-implementing auth
 - do not start a new OAuth flow
+- do not look for another credentials path
+- do not say Google Docs is unavailable before checking the local wrapper
 - first verify access with `meta`
 
-Note: the current local integration is for Google Sheets via the existing wrapper. If the owner provides a Google Docs link instead of a Sheet, the agent must not drift into a generic assistant response. It should first state briefly that the automated write path currently targets Google Sheets and then ask whether to switch the run to a Google Sheet or proceed with local-only output.
+Document ID rule:
+- from a link like `https://docs.google.com/document/d/<document_id>/edit`, extract `<document_id>` and use it with the wrapper
+
+Before writing:
+- determine whether the write is a safe append
+- avoid damaging the existing document structure
+- if the intended write mode is unclear, ask a minimal clarifying question or use the safest append-only path
+
+If access fails with 403:
+- verify the document is shared with `openclaw-sheets@openclaw-sheets-492416.iam.gserviceaccount.com`
 
 ## Agent workflow
 
@@ -75,10 +95,13 @@ Note: the current local integration is for Google Sheets via the existing wrappe
    - `кейсы рекламы <ниша>`
    - `лидогенерация <ниша> кейс`
 8. Collect up to 20 relevant sources.
-9. Add the found case links and short notes into the target Google sheet/document.
-10. Analyze the collected materials.
-11. Write recommendations into the same target document.
-12. Save a local copy of the result or notes into:
+9. Extract the Google document id from the provided link.
+10. Verify access first with:
+   - `/root/openclaw/scripts/docs meta <document_id>`
+11. Add the found case links and short notes into the target Google document.
+12. Analyze the collected materials.
+13. Write recommendations into the same target document.
+14. Save a local copy of the result or notes into:
    - `Projects/<client>/target/competitor-analysis/`
 
 ## Source selection rules
