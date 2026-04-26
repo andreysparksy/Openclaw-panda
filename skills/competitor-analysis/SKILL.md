@@ -102,6 +102,8 @@ Produce:
    - `Вот что должно быть по тексту в креативах:`
 3. Recommendations for landing pages:
    - `На какую посадочную страницу я рекомендовал бы вести:`
+   - tie this strictly to the real ad platform
+   - for VK Ads, keep recommendations limited to realistic formats such as lead forms, bot flows, or sending a message to the group/community
 4. A local saved copy inside the client project folder.
 
 ## Response style

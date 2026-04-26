@@ -117,6 +117,23 @@ Avoid:
 - irrelevant materials from other niches unless they are clearly transferable
 - weak sources added only to hit the number
 
+## Platform-specific landing rule
+
+Landing page recommendations must be tied to the actual ad platform.
+The agent must not recommend abstract landing formats detached from the launch environment.
+
+Rule:
+- recommend only the landing mechanics that are realistic for the actual traffic source/platform
+
+For VK Ads specifically, landing recommendations should be limited to formats such as:
+- lead forms
+- bot flows
+- message to the community/group
+
+If the launch platform is not yet known, the agent must state that the landing recommendation depends on the platform and either:
+- ask a short clarifying question, or
+- provide conditional recommendations separated by platform
+
 ## Target document output structure
 
 ### Найденные кейсы по нише
@@ -133,6 +150,9 @@ Avoid:
 1. ...
 2. ...
 3. ...
+
+In this section, the agent must explicitly reflect the ad platform constraints. Example:
+- for VK Ads: lead forms, bot, or message to the group/community
 
 ## Analysis principles
 
