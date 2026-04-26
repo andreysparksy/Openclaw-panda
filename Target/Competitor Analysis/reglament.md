@@ -154,6 +154,13 @@ If the launch platform is not yet known, the agent must state that the landing r
 In this section, the agent must explicitly reflect the ad platform constraints. Example:
 - for VK Ads: lead forms, bot, or message to the group/community
 
+### На какую аудиторию запускать рекламу в первую очередь:
+1. ...
+2. ...
+3. ...
+
+The audience recommendations must be practical and tied to the actual niche, offer, and likely first-test segments.
+
 ## Analysis principles
 
 - Do not invent conclusions without source support.

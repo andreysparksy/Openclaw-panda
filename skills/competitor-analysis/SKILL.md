@@ -104,7 +104,9 @@ Produce:
    - `На какую посадочную страницу я рекомендовал бы вести:`
    - tie this strictly to the real ad platform
    - for VK Ads, keep recommendations limited to realistic formats such as lead forms, bot flows, or sending a message to the group/community
-4. A local saved copy inside the client project folder.
+4. Recommendations for the first audiences to test:
+   - `На какую аудиторию запускать рекламу в первую очередь:`
+5. A local saved copy inside the client project folder.
 
 ## Response style
 
