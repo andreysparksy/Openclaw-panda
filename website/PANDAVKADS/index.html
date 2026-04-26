@@ -6,167 +6,174 @@
     <title>PANDAVKADS — Агентство по таргету</title>
     <style>
       :root {
-        --bg: #f4fff7;
-        --card: #ffffff;
-        --text: #12321e;
-        --muted: #3f6b52;
-        --green-900: #0f5a2f;
-        --green-700: #1f8a4d;
-        --green-500: #34c36b;
-        --green-300: #9fe7b8;
-        --line: #d3f3df;
+        --bg: #f8faf8;
+        --surface: #ffffff;
+        --line: #e6ebe7;
+        --text: #0f1e14;
+        --muted: #4f5f56;
+        --primary: #1f7a45;
+        --primary-strong: #176338;
+        --primary-soft: #eef6f1;
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
       body {
         margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
         color: var(--text);
-        background: radial-gradient(circle at 20% 0%, #e6ffef 0%, var(--bg) 45%, #effff4 100%);
+        background: var(--bg);
+      }
+
+      .wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 42px 0;
       }
 
       .container {
-        width: min(1100px, 92vw);
+        width: min(1120px, 92vw);
         margin: 0 auto;
       }
 
       .hero {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        padding: 56px 0;
-      }
-
-      .hero-card {
-        width: 100%;
-        background: linear-gradient(180deg, #ffffff 0%, #f7fff9 100%);
+        position: relative;
+        background: var(--surface);
         border: 1px solid var(--line);
-        border-radius: 24px;
-        padding: clamp(24px, 4vw, 48px);
-        box-shadow: 0 18px 42px rgba(17, 97, 47, 0.12);
+        border-radius: 26px;
+        padding: clamp(24px, 4vw, 56px);
       }
 
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--green-900);
-        background: #e7ffef;
-        border: 1px solid #bdf2d0;
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: 24px;
+        top: 24px;
+        width: 180px;
+        height: 180px;
         border-radius: 999px;
-        padding: 8px 12px;
-        letter-spacing: 0.3px;
+        background: radial-gradient(circle, rgba(31, 122, 69, 0.08), rgba(31, 122, 69, 0));
+        pointer-events: none;
+      }
+
+      .label {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
+        color: var(--primary);
+        background: var(--primary-soft);
+        border: 1px solid #d9eade;
+        border-radius: 999px;
+        padding: 7px 12px;
       }
 
       h1 {
         margin: 18px 0 0;
-        font-size: clamp(32px, 5.2vw, 62px);
-        line-height: 1.08;
-        letter-spacing: -0.02em;
         max-width: 980px;
+        font-size: clamp(34px, 6vw, 68px);
+        line-height: 1.04;
+        letter-spacing: -0.03em;
+        text-wrap: balance;
       }
 
       .sub {
-        margin: 20px 0 0;
-        font-size: clamp(18px, 2.1vw, 24px);
+        margin: 22px 0 0;
+        max-width: 900px;
+        font-size: clamp(18px, 2.2vw, 24px);
         line-height: 1.5;
         color: var(--muted);
-        max-width: 920px;
       }
 
-      .actions {
+      .buttons {
         margin-top: 34px;
         display: flex;
-        gap: 12px;
         flex-wrap: wrap;
+        gap: 12px;
       }
 
       .btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 14px 22px;
+        height: 48px;
+        padding: 0 20px;
         border-radius: 12px;
         text-decoration: none;
         font-weight: 700;
-        font-size: 16px;
-        transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+        font-size: 15px;
+        transition: all 0.18s ease;
       }
 
       .btn-primary {
+        background: var(--primary);
         color: #fff;
-        background: linear-gradient(180deg, var(--green-700), var(--green-900));
-        box-shadow: 0 10px 20px rgba(28, 128, 70, 0.35);
+        border: 1px solid var(--primary);
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-strong);
+        border-color: var(--primary-strong);
       }
 
       .btn-secondary {
-        color: var(--green-900);
-        background: #ecfff3;
-        border: 1px solid #beeed0;
+        background: #fff;
+        color: var(--text);
+        border: 1px solid var(--line);
       }
 
-      .btn:hover {
-        transform: translateY(-1px);
+      .btn-secondary:hover {
+        border-color: #cfd7d2;
+        background: #fcfdfc;
       }
 
-      .bullets {
-        margin-top: 32px;
-        border-top: 1px solid var(--line);
+      .points {
+        margin-top: 34px;
         padding-top: 26px;
+        border-top: 1px solid var(--line);
         display: grid;
         gap: 12px;
       }
 
-      .bullet {
-        display: flex;
-        align-items: flex-start;
+      .point {
+        display: grid;
+        grid-template-columns: 18px 1fr;
+        align-items: start;
         gap: 10px;
-        color: #1f5034;
+        color: #23382b;
         font-size: 17px;
         line-height: 1.45;
       }
 
-      .dot {
-        flex: 0 0 auto;
-        width: 8px;
-        height: 8px;
-        margin-top: 0.55em;
+      .point .mark {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
         border-radius: 50%;
-        background: var(--green-500);
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        color: var(--primary);
+        background: var(--primary-soft);
+        border: 1px solid #d7e8dd;
       }
 
-      @media (max-width: 680px) {
-        .hero {
-          min-height: unset;
-          padding: 26px 0 30px;
-        }
-
-        .hero-card {
-          border-radius: 16px;
-          padding: 20px;
-        }
-
-        .sub {
-          font-size: 17px;
-        }
-
-        .bullet {
-          font-size: 16px;
-        }
+      @media (max-width: 720px) {
+        .wrap { padding: 20px 0 26px; }
+        .hero { border-radius: 16px; }
+        h1 { font-size: clamp(30px, 11vw, 44px); }
+        .sub { font-size: 17px; }
+        .point { font-size: 16px; }
       }
     </style>
   </head>
   <body>
-    <main class="hero">
+    <main class="wrap">
       <div class="container">
-        <section class="hero-card">
-          <span class="badge">PANDAVKADS • Таргет-агентство</span>
+        <section class="hero">
+          <span class="label">PANDAVKADS • Таргет-агентство</span>
 
           <h1>
             Хватит искать «волшебного подрядчика».<br />
@@ -179,16 +186,16 @@
             продажи — чтобы вы получали не отчёты, а результат в деньгах.
           </p>
 
-          <div class="actions">
+          <div class="buttons">
             <a class="btn btn-primary" href="#brief">Получить разбор</a>
             <a class="btn btn-secondary" href="#cases">Смотреть кейсы</a>
           </div>
 
-          <div class="bullets" aria-label="Ключевые тезисы">
-            <div class="bullet"><span class="dot"></span><span>100+ связок под разные ниши и бюджеты</span></div>
-            <div class="bullet"><span class="dot"></span><span>Без магии и «гарантированных миллионов за 7 дней»</span></div>
-            <div class="bullet"><span class="dot"></span><span>Сначала стратегия и фундамент, потом трафик</span></div>
-            <div class="bullet"><span class="dot"></span><span>Прозрачные этапы, метрики и ответственность за результат</span></div>
+          <div class="points" aria-label="Ключевые тезисы">
+            <div class="point"><span class="mark">✓</span><span>100+ связок под разные ниши и бюджеты</span></div>
+            <div class="point"><span class="mark">✓</span><span>Без магии и «гарантированных миллионов за 7 дней»</span></div>
+            <div class="point"><span class="mark">✓</span><span>Сначала стратегия и фундамент, потом трафик</span></div>
+            <div class="point"><span class="mark">✓</span><span>Прозрачные этапы, метрики и ответственность за результат</span></div>
           </div>
         </section>
       </div>
