@@ -243,33 +243,109 @@ function SectionCard({ section, isActive, onClick }) {
 }
 
 function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
-  const [draft, setDraft] = useState({ sessionName: "", displayName: "", status: "Активен" });
+  const [step, setStep] = useState(1);
+  const [draft, setDraft] = useState({
+    sessionName: "",
+    phone: "",
+    code: "",
+    password: "",
+    displayName: "",
+    status: "Активен",
+  });
+  const [needPassword, setNeedPassword] = useState(false);
+  const [resultText, setResultText] = useState("");
 
-  const submit = () => {
-    if (!draft.sessionName.trim() || !draft.displayName.trim()) return;
+  const sendCode = () => {
+    if (!draft.sessionName.trim() || !draft.phone.trim()) return;
+    setResultText("Код отправлен. Теперь введи код из Telegram.");
+    setStep(2);
+  };
+
+  const confirmCode = () => {
+    if (!draft.code.trim()) return;
+    if (needPassword) {
+      setStep(3);
+      return;
+    }
     onAddAccount(project.id, {
       name: draft.sessionName.trim(),
-      label: draft.displayName.trim(),
+      label: draft.displayName.trim() || draft.sessionName.trim(),
       status: draft.status,
     });
-    setDraft({ sessionName: "", displayName: "", status: "Активен" });
+    setResultText("Аккаунт добавлен в интерфейс проекта.");
+    setDraft({ sessionName: "", phone: "", code: "", password: "", displayName: "", status: "Активен" });
+    setNeedPassword(false);
+    setStep(1);
+  };
+
+  const confirmPassword = () => {
+    if (!draft.password.trim()) return;
+    onAddAccount(project.id, {
+      name: draft.sessionName.trim(),
+      label: draft.displayName.trim() || draft.sessionName.trim(),
+      status: draft.status,
+    });
+    setResultText("Аккаунт добавлен после подтверждения 2FA.");
+    setDraft({ sessionName: "", phone: "", code: "", password: "", displayName: "", status: "Активен" });
+    setNeedPassword(false);
+    setStep(1);
   };
 
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
         <h3 className="text-xl font-bold">Аккаунты проекта «{project.name}»</h3>
-        <p className="mt-1 text-sm text-slate-500">Добавляй отдельные аккаунты именно в эту папку проекта.</p>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <input value={draft.sessionName} onChange={(e) => setDraft((p) => ({ ...p, sessionName: e.target.value }))} placeholder="Имя сессии" className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
-          <input value={draft.displayName} onChange={(e) => setDraft((p) => ({ ...p, displayName: e.target.value }))} placeholder="Отображаемое имя" className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
-          <select value={draft.status} onChange={(e) => setDraft((p) => ({ ...p, status: e.target.value }))} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400">
-            <option>Активен</option>
-            <option>Прогрев</option>
-            <option>Лимит</option>
-          </select>
+        <p className="mt-1 text-sm text-slate-500">Пошаговый мастер добавления аккаунта: имя сессии → телефон → код → 2FA при необходимости.</p>
+
+        <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
+          <span className={step === 1 ? "rounded-full bg-slate-950 px-3 py-2 text-white" : "rounded-full bg-white px-3 py-2"}>1. Данные</span>
+          <span className={step === 2 ? "rounded-full bg-slate-950 px-3 py-2 text-white" : "rounded-full bg-white px-3 py-2"}>2. Код</span>
+          <span className={step === 3 ? "rounded-full bg-slate-950 px-3 py-2 text-white" : "rounded-full bg-white px-3 py-2"}>3. 2FA</span>
         </div>
-        <button onClick={submit} className="mt-4 inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">Добавить аккаунт</button>
+
+        {step === 1 && (
+          <div className="mt-5 space-y-3">
+            <div className="grid gap-3 md:grid-cols-2">
+              <input value={draft.sessionName} onChange={(e) => setDraft((p) => ({ ...p, sessionName: e.target.value }))} placeholder="Имя сессии" className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
+              <input value={draft.displayName} onChange={(e) => setDraft((p) => ({ ...p, displayName: e.target.value }))} placeholder="Отображаемое имя" className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
+            </div>
+            <div className="grid gap-3 md:grid-cols-[1fr_220px]">
+              <input value={draft.phone} onChange={(e) => setDraft((p) => ({ ...p, phone: e.target.value }))} placeholder="Номер телефона, например +79991234567" className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
+              <select value={draft.status} onChange={(e) => setDraft((p) => ({ ...p, status: e.target.value }))} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400">
+                <option>Активен</option>
+                <option>Прогрев</option>
+                <option>Лимит</option>
+              </select>
+            </div>
+            <label className="inline-flex items-center gap-2 text-sm text-slate-600">
+              <input type="checkbox" checked={needPassword} onChange={(e) => setNeedPassword(e.target.checked)} />
+              На аккаунте включена двухфакторная аутентификация
+            </label>
+            <button onClick={sendCode} className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">Отправить код</button>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="mt-5 space-y-3">
+            <input value={draft.code} onChange={(e) => setDraft((p) => ({ ...p, code: e.target.value }))} placeholder="Код из Telegram" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
+            <div className="flex flex-wrap gap-3">
+              <button onClick={confirmCode} className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">Подтвердить код</button>
+              <button onClick={() => setStep(1)} className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">Назад</button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="mt-5 space-y-3">
+            <input value={draft.password} onChange={(e) => setDraft((p) => ({ ...p, password: e.target.value }))} placeholder="Пароль двухфакторной аутентификации" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
+            <div className="flex flex-wrap gap-3">
+              <button onClick={confirmPassword} className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">Подтвердить пароль</button>
+              <button onClick={() => setStep(2)} className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">Назад</button>
+            </div>
+          </div>
+        )}
+
+        {resultText && <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">{resultText}</div>}
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -285,12 +361,7 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
                   <td className="px-4 py-4 text-slate-600">{account.label}</td>
                   <td className="px-4 py-4 text-slate-600">{account.status}</td>
                   <td className="px-4 py-4 text-right">
-                    <button
-                      onClick={() => onDeleteAccount(project.id, account.name)}
-                      className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
-                    >
-                      Удалить
-                    </button>
+                    <button onClick={() => onDeleteAccount(project.id, account.name)} className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100">Удалить</button>
                   </td>
                 </tr>
               ))}
