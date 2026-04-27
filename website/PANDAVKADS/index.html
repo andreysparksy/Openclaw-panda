@@ -99,7 +99,8 @@
 
       .nav-links {
         display: flex;
-        gap: 24px;
+        align-items: center;
+        gap: 8px;
       }
 
       .nav-links a,
@@ -107,24 +108,66 @@
         text-decoration: none;
       }
 
+      .nav-links a {
+        min-height: 38px;
+        padding: 0 12px;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255,255,255,.72);
+        font-weight: 500;
+        transition: transform .18s ease, color .18s ease, border-color .18s ease, background .18s ease;
+      }
+
+      .nav-links a:hover {
+        transform: translateY(-1px);
+        color: #fff;
+        border-color: rgba(255,255,255,.14);
+        background: rgba(255,255,255,.055);
+      }
+
+      .nav-links a:active {
+        transform: translateY(0);
+      }
+
       .nav-cta {
-        min-height: 40px;
-        padding: 0 16px;
+        min-height: 42px;
+        padding: 0 18px;
         border: 1px solid rgba(255,255,255,.22);
         border-radius: 999px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 8px;
         color: #fff;
+        font-weight: 500;
         background: rgba(255,255,255,.08);
         backdrop-filter: blur(10px);
-        transition: transform .18s ease, border-color .18s ease, background .18s ease;
+        transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+      }
+
+      .nav-cta::after {
+        content: "→";
+        font-size: 15px;
+        line-height: 1;
+        transition: transform .18s ease;
       }
 
       .nav-cta:hover {
         transform: translateY(-1px);
         border-color: rgba(255,255,255,.36);
         background: rgba(255,255,255,.12);
+        box-shadow: 0 12px 34px rgba(0,0,0,.22);
+      }
+
+      .nav-cta:hover::after {
+        transform: translateX(3px);
+      }
+
+      .nav-cta:active {
+        transform: translateY(0);
       }
 
       .hero-inner {
@@ -195,7 +238,7 @@
         gap: 10px;
         text-decoration: none;
         font-size: 14px;
-        font-weight: 800;
+        font-weight: 500;
         line-height: 1;
         letter-spacing: -0.01em;
         white-space: nowrap;
