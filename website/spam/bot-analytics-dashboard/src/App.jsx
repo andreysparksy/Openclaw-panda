@@ -16,10 +16,10 @@ const stats = [
     icon: "🛡️",
   },
   {
-    label: "Чатов в работе",
+    label: "Чатов в боте",
     value: "1 842",
     delta: "+6.4%",
-    hint: "получают рассылку",
+    hint: "сейчас в списке",
     icon: "💬",
   },
   {
@@ -55,39 +55,57 @@ const accountGroups = [
   { label: "Отвалились", value: 7, percent: 2, icon: "⛔" },
 ];
 
-const campaigns = [
+const botFolders = [
   {
-    name: "Основная рассылка / RU",
-    status: "В работе",
-    sent: "42 380",
-    chats: "612",
-    accounts: "74",
-    errorRate: "1.8%",
+    id: "accounts",
+    title: "Аккаунты",
+    icon: "👤",
+    description: "Загрузка и хранение аккаунтов для работы бота.",
   },
   {
-    name: "Тест новых офферов",
-    status: "Пауза",
-    sent: "8 940",
-    chats: "138",
-    accounts: "22",
-    errorRate: "3.1%",
+    id: "messages",
+    title: "Сообщения",
+    icon: "💬",
+    description: "Редактирование первого, второго и третьего сообщения.",
   },
   {
-    name: "Повторная каскадная",
-    status: "В работе",
-    sent: "31 120",
-    chats: "487",
-    accounts: "61",
-    errorRate: "2.4%",
+    id: "add-chat",
+    title: "Добавить чат",
+    icon: "➕",
+    description: "Добавление новых чатов и ссылок в список бота.",
   },
   {
-    name: "Холодные чаты / сегмент B",
-    status: "В работе",
-    sent: "17 620",
-    chats: "296",
-    accounts: "43",
-    errorRate: "2.0%",
+    id: "chat-list",
+    title: "Список чатов",
+    icon: "📋",
+    description: "Просмотр чатов, которые уже лежат в боте.",
   },
+];
+
+const initialBotMessages = {
+  first: "Привет, есть нормальные подрядчики по клинингу? А то попадаются одни распиздяи. Мне главное, чтобы на совесть делали и стандарты соблюдали.",
+  second:
+    "Если в Питере или Казани, то могу рекомендовать этих ребят — http://avito.ru/brands/89d521a4fe29873dfd9f1f42c7e90b31/all/predlozheniya_uslug?src=search_seller_info&iid=7805656263&sellerId=19f4fba8e5fa09e037bed1c9bb1516d8",
+  third: "Кстати, тоже к ним обращались, только через вк — https://vk.com/prommclean",
+};
+
+const initialChats = [
+  "https://t.me/foodsafety_ru",
+  "https://t.me/normtu",
+  "https://t.me/Food_IndustryPRO",
+  "https://t.me/INTEKPROM",
+  "https://t.me/sanerity",
+  "https://t.me/marafonhassp",
+  "https://t.me/bezopasnosty",
+  "https://t.me/ONlineOhranaTrudaEcoBIOT",
+  "https://t.me/haccpmore",
+];
+
+const initialAccounts = [
+  { name: "session1", label: "Аккаунт 1", status: "Активен" },
+  { name: "session2", label: "Аккаунт 2", status: "Активен" },
+  { name: "session3", label: "Аккаунт 3", status: "Активен" },
+  { name: "session4", label: "Аккаунт 4", status: "Прогрев" },
 ];
 
 function formatNumber(value) {
@@ -135,22 +153,6 @@ function StatCard({ item }) {
         <p className="mt-1 text-sm text-slate-400">{item.hint}</p>
       </div>
     </div>
-  );
-}
-
-function StatusPill({ status }) {
-  const isActive = status === "В работе";
-
-  return (
-    <span
-      className={
-        isActive
-          ? "rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700"
-          : "rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700"
-      }
-    >
-      {status}
-    </span>
   );
 }
 
@@ -240,15 +242,282 @@ function ChatsChart() {
   );
 }
 
-export default function BotAnalyticsDashboard() {
-  const [period, setPeriod] = useState("7 дней");
+function FolderCard({ folder, isActive, onClick }) {
+  return (
+    <button
+      onClick={() => onClick(folder.id)}
+      className={
+        isActive
+          ? "rounded-3xl border border-slate-950 bg-slate-950 p-5 text-left text-white shadow-sm transition"
+          : "rounded-3xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
+      }
+    >
+      <div className="flex items-center justify-between gap-4">
+        <div className={isActive ? "text-3xl" : "text-3xl"}>{folder.icon}</div>
+        <span
+          className={
+            isActive
+              ? "rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white"
+              : "rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
+          }
+        >
+          Папка
+        </span>
+      </div>
+      <h3 className="mt-5 text-xl font-bold">{folder.title}</h3>
+      <p className={isActive ? "mt-2 text-sm text-slate-200" : "mt-2 text-sm text-slate-500"}>
+        {folder.description}
+      </p>
+    </button>
+  );
+}
+
+function AccountsManager({ accounts, onAddAccount, newAccount, setNewAccount }) {
+  return (
+    <div className="space-y-6">
+      <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+        <div className="mb-4">
+          <h3 className="text-xl font-bold">Загрузить новый аккаунт</h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Здесь можно добавить новую сессию или подготовить загрузку аккаунта в бот.
+          </p>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-3">
+          <input
+            value={newAccount.sessionName}
+            onChange={(event) => setNewAccount((prev) => ({ ...prev, sessionName: event.target.value }))}
+            placeholder="Имя сессии"
+            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+          />
+          <input
+            value={newAccount.displayName}
+            onChange={(event) => setNewAccount((prev) => ({ ...prev, displayName: event.target.value }))}
+            placeholder="Отображаемое имя"
+            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+          />
+          <select
+            value={newAccount.status}
+            onChange={(event) => setNewAccount((prev) => ({ ...prev, status: event.target.value }))}
+            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+          >
+            <option>Активен</option>
+            <option>Прогрев</option>
+            <option>Лимит</option>
+          </select>
+        </div>
+
+        <button
+          onClick={onAddAccount}
+          className="mt-4 inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+        >
+          Добавить аккаунт
+        </button>
+      </div>
+
+      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h3 className="text-xl font-bold">Аккаунты в боте</h3>
+        <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-50 text-xs uppercase tracking-widest text-slate-400">
+              <tr>
+                <th className="px-4 py-4">Сессия</th>
+                <th className="px-4 py-4">Название</th>
+                <th className="px-4 py-4">Статус</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 bg-white">
+              {accounts.map((account) => (
+                <tr key={account.name}>
+                  <td className="px-4 py-4 font-semibold text-slate-950">{account.name}</td>
+                  <td className="px-4 py-4 text-slate-600">{account.label}</td>
+                  <td className="px-4 py-4 text-slate-600">{account.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MessagesManager({ messages, setMessages }) {
+  const messageFields = [
+    { key: "first", title: "Первое сообщение" },
+    { key: "second", title: "Второе сообщение" },
+    { key: "third", title: "Третье сообщение" },
+  ];
+
+  return (
+    <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div>
+        <h3 className="text-xl font-bold">Сообщения для бота</h3>
+        <p className="mt-1 text-sm text-slate-500">
+          Здесь можно менять первое, второе и третье сообщение цепочки.
+        </p>
+      </div>
+
+      {messageFields.map((field) => (
+        <div key={field.key} className="rounded-2xl bg-slate-50 p-4">
+          <label className="mb-3 block text-sm font-semibold text-slate-700">{field.title}</label>
+          <textarea
+            value={messages[field.key]}
+            onChange={(event) =>
+              setMessages((prev) => ({
+                ...prev,
+                [field.key]: event.target.value,
+              }))
+            }
+            rows={field.key === "second" ? 4 : 3}
+            className="min-h-[110px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AddChatManager({ newChat, setNewChat, onAddChat }) {
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div>
+        <h3 className="text-xl font-bold">Добавить новый чат</h3>
+        <p className="mt-1 text-sm text-slate-500">
+          Добавляй новые ссылки или @username, которые нужно положить в бот.
+        </p>
+      </div>
+
+      <div className="mt-5 space-y-3">
+        <input
+          value={newChat}
+          onChange={(event) => setNewChat(event.target.value)}
+          placeholder="https://t.me/example или @example"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+        />
+        <button
+          onClick={onAddChat}
+          className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+        >
+          Добавить чат
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ChatListManager({ chats }) {
   const [query, setQuery] = useState("");
 
-  const filteredCampaigns = useMemo(() => {
-    return campaigns.filter((campaign) =>
-      campaign.name.toLowerCase().includes(query.toLowerCase())
-    );
-  }, [query]);
+  const filteredChats = useMemo(() => {
+    return chats.filter((chat) => chat.toLowerCase().includes(query.toLowerCase()));
+  }, [chats, query]);
+
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-xl font-bold">Список чатов в боте</h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Все чаты, которые сейчас подключены к боту.
+          </p>
+        </div>
+        <label className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <span className="text-slate-400">⌕</span>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Найти чат"
+            className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+          />
+        </label>
+      </div>
+
+      <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-slate-50 text-xs uppercase tracking-widest text-slate-400">
+            <tr>
+              <th className="px-4 py-4">#</th>
+              <th className="px-4 py-4">Чат</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 bg-white">
+            {filteredChats.map((chat, index) => (
+              <tr key={`${chat}-${index}`}>
+                <td className="px-4 py-4 font-semibold text-slate-500">{index + 1}</td>
+                <td className="px-4 py-4 text-slate-700">{chat}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+export default function BotAnalyticsDashboard() {
+  const [period, setPeriod] = useState("7 дней");
+  const [activeFolder, setActiveFolder] = useState("accounts");
+  const [messages, setMessages] = useState(initialBotMessages);
+  const [chats, setChats] = useState(initialChats);
+  const [accounts, setAccounts] = useState(initialAccounts);
+  const [newChat, setNewChat] = useState("");
+  const [newAccount, setNewAccount] = useState({
+    sessionName: "",
+    displayName: "",
+    status: "Активен",
+  });
+
+  const addChat = () => {
+    const trimmed = newChat.trim();
+    if (!trimmed) return;
+    setChats((prev) => [trimmed, ...prev]);
+    setNewChat("");
+  };
+
+  const addAccount = () => {
+    const sessionName = newAccount.sessionName.trim();
+    const displayName = newAccount.displayName.trim();
+    if (!sessionName || !displayName) return;
+
+    setAccounts((prev) => [
+      {
+        name: sessionName,
+        label: displayName,
+        status: newAccount.status,
+      },
+      ...prev,
+    ]);
+
+    setNewAccount({
+      sessionName: "",
+      displayName: "",
+      status: "Активен",
+    });
+  };
+
+  const renderFolderContent = () => {
+    if (activeFolder === "accounts") {
+      return (
+        <AccountsManager
+          accounts={accounts}
+          newAccount={newAccount}
+          setNewAccount={setNewAccount}
+          onAddAccount={addAccount}
+        />
+      );
+    }
+
+    if (activeFolder === "messages") {
+      return <MessagesManager messages={messages} setMessages={setMessages} />;
+    }
+
+    if (activeFolder === "add-chat") {
+      return <AddChatManager newChat={newChat} setNewChat={setNewChat} onAddChat={addChat} />;
+    }
+
+    return <ChatListManager chats={chats} />;
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 text-slate-950 sm:p-6 lg:p-8">
@@ -263,10 +532,10 @@ export default function BotAnalyticsDashboard() {
                 Bot analytics
               </p>
               <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-                Аналитика рассылочного бота
+                Панель управления Telegram-ботом
               </h1>
               <p className="mt-2 max-w-2xl text-slate-500">
-                Контроль отправок, живых аккаунтов, рабочих чатов и ошибок доставки в одном интерфейсе.
+                Управление аккаунтами, сообщениями и чатами бота в одном аккуратном интерфейсе.
               </p>
             </div>
           </div>
@@ -368,55 +637,31 @@ export default function BotAnalyticsDashboard() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-widest text-slate-400">
-                    Рассылки
+                    Управление ботом
                   </p>
-                  <h2 className="mt-2 text-2xl font-bold">Кампании в работе</h2>
+                  <h2 className="mt-2 text-2xl font-bold">Разделы по папкам</h2>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Отдельные блоки для загрузки аккаунтов, редактирования сообщений и работы со списком чатов.
+                  </p>
                 </div>
-                <label className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  <span className="text-slate-400">⌕</span>
-                  <input
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Найти кампанию"
-                    className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-                  />
-                </label>
+
+                <div className="mt-6 grid gap-4 md:grid-cols-2">
+                  {botFolders.map((folder) => (
+                    <FolderCard
+                      key={folder.id}
+                      folder={folder}
+                      isActive={activeFolder === folder.id}
+                      onClick={setActiveFolder}
+                    />
+                  ))}
+                </div>
               </div>
 
-              <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200">
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[760px] text-left text-sm">
-                    <thead className="bg-slate-50 text-xs uppercase tracking-widest text-slate-400">
-                      <tr>
-                        <th className="px-4 py-4">Кампания</th>
-                        <th className="px-4 py-4">Статус</th>
-                        <th className="px-4 py-4">Отправлено</th>
-                        <th className="px-4 py-4">Чаты</th>
-                        <th className="px-4 py-4">Аккаунты</th>
-                        <th className="px-4 py-4">Ошибки</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 bg-white">
-                      {filteredCampaigns.map((campaign) => (
-                        <tr key={campaign.name} className="transition hover:bg-slate-50">
-                          <td className="px-4 py-4 font-semibold text-slate-950">{campaign.name}</td>
-                          <td className="px-4 py-4">
-                            <StatusPill status={campaign.status} />
-                          </td>
-                          <td className="px-4 py-4 text-slate-600">{campaign.sent}</td>
-                          <td className="px-4 py-4 text-slate-600">{campaign.chats}</td>
-                          <td className="px-4 py-4 text-slate-600">{campaign.accounts}</td>
-                          <td className="px-4 py-4 text-slate-600">{campaign.errorRate}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              {renderFolderContent()}
             </div>
           </section>
         </main>
