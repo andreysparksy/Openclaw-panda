@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-const API_BASE = "http://127.0.0.1:8787/api";
+const API_BASE = "https://api.pandavkads.ru/api";
 
 
 const projectSections = [
