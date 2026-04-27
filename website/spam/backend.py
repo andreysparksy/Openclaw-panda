@@ -10,6 +10,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'pydeps'))
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pyrogram import Client
@@ -113,6 +114,28 @@ def load_chats() -> list[str]:
         chats = [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
         return chats or DEFAULT_CHATS.copy()
     return DEFAULT_CHATS.copy()
+
+
+def session_path_candidates(session_name: str) -> list[Path]:
+    if session_name == "admin_bot":
+        return [TELEGRAM_BOT_DIR / "admin_bot.session"]
+    return [SESSIONS_DIR / f"{session_name}.session"]
+
+
+def delete_session_files(session_name: str) -> list[str]:
+    removed: list[str] = []
+    for base_path in session_path_candidates(session_name):
+        candidates = [base_path]
+        candidates.extend(sorted(base_path.parent.glob(f"{base_path.name}*")))
+        seen: set[Path] = set()
+        for candidate in candidates:
+            if candidate in seen or not candidate.exists():
+                continue
+            seen.add(candidate)
+            if candidate.is_file():
+                candidate.unlink()
+                removed.append(str(candidate))
+    return removed
 
 
 async def inspect_account(name: str) -> dict[str, Any]:
@@ -241,6 +264,31 @@ async def verify_password(payload: VerifyPasswordRequest):
         raise HTTPException(status_code=400, detail=f'Telegram: {exc.__class__.__name__}: {exc}')
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f'Backend: {exc}')
+
+
+@app.delete('/api/account/{session_name}')
+async def delete_account(session_name: str):
+    existing_accounts = session_files()
+    if session_name not in existing_accounts:
+        raise HTTPException(status_code=404, detail='Аккаунт не найден')
+
+    client = clients.pop(session_name, None)
+    if client is not None:
+        try:
+            await client.disconnect()
+        except Exception:
+            pass
+
+    state = load_state()
+    if session_name in state.get('pending', {}):
+        state['pending'].pop(session_name, None)
+        save_state(state)
+
+    removed = delete_session_files(session_name)
+    if not removed:
+        return JSONResponse(status_code=409, content={'ok': False, 'detail': 'Файлы сессии не удалены'})
+
+    return {'ok': True, 'message': 'Аккаунт удалён', 'removed': removed}
 
 
 @app.get('/api/health')

@@ -157,7 +157,7 @@ function getStatusClasses(status) {
   return "bg-slate-100 text-slate-600";
 }
 
-function AccountsManager({ project, onAddAccount, onDeleteAccount, onReloadProject }) {
+function AccountsManager({ project, onDeleteAccount, onReloadProject }) {
   const [step, setStep] = useState(1);
   const [draft, setDraft] = useState({
     sessionName: "",
@@ -169,6 +169,7 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount, onReloadProje
   const [needPassword, setNeedPassword] = useState(false);
   const [resultText, setResultText] = useState("");
   const [isBusy, setIsBusy] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState("");
 
   const sendCode = async () => {
     if (!draft.sessionName.trim() || !draft.phone.trim()) return;
@@ -239,6 +240,26 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount, onReloadProje
       setResultText(error.message || "Ошибка 2FA");
     } finally {
       setIsBusy(false);
+    }
+  };
+
+  const handleDeleteAccount = async (accountName) => {
+    const confirmed = window.confirm(`Удалить аккаунт ${accountName}? Это удалит и реальную session.`);
+    if (!confirmed) return;
+    setDeletingAccount(accountName);
+    try {
+      const response = await fetch(`${API_BASE}/account/${encodeURIComponent(accountName)}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Не удалось удалить аккаунт");
+      setResultText(data.message || "Аккаунт удалён");
+      await onDeleteAccount(project.id, accountName);
+      await onReloadProject();
+    } catch (error) {
+      setResultText(error.message || "Ошибка удаления аккаунта");
+    } finally {
+      setDeletingAccount("");
     }
   };
 
@@ -328,7 +349,7 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount, onReloadProje
                   <td className="px-4 py-4 text-slate-600">{account.lastCheck || "—"}</td>
                   <td className="px-4 py-4 text-right">
                     <button className="mr-2 rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200">Проверить</button>
-                    <button onClick={() => onDeleteAccount(project.id, account.name)} className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100">Удалить</button>
+                    <button onClick={() => handleDeleteAccount(account.name)} disabled={deletingAccount === account.name} className={deletingAccount === account.name ? "rounded-xl bg-rose-100 px-3 py-2 text-xs font-semibold text-rose-400 cursor-not-allowed" : "rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"}>{deletingAccount === account.name ? "Удаляем..." : "Удалить"}</button>
                   </td>
                 </tr>
               ))}
@@ -557,7 +578,7 @@ export default function BotAnalyticsDashboard() {
 
   const renderSectionContent = () => {
     if (!activeProject) return null;
-    if (activeSection === "accounts") return <AccountsManager project={activeProject} onAddAccount={addAccount} onDeleteAccount={deleteAccount} onReloadProject={loadBackendState} />;
+    if (activeSection === "accounts") return <AccountsManager project={activeProject} onDeleteAccount={deleteAccount} onReloadProject={loadBackendState} />;
     if (activeSection === "messages") return <MessagesManager project={activeProject} onUpdateMessages={updateMessages} />;
     if (activeSection === "add-chat") return <AddChatManager project={activeProject} onAddChat={addChat} />;
     return <ChatListManager project={activeProject} onDeleteChat={deleteChat} />;
