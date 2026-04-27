@@ -12,52 +12,27 @@ const createProject = (id, name, chats, accounts, messages) => ({ id, name, chat
 
 const initialProjects = [
   createProject(
-    "agency",
-    "Агентство",
+    "cleaning",
+    "Клининг",
     [
       "https://t.me/foodsafety_ru",
       "https://t.me/normtu",
       "https://t.me/Food_IndustryPRO",
       "https://t.me/INTEKPROM",
+      "https://t.me/sanerity",
+      "https://t.me/marafonhassp",
+      "https://t.me/bezopasnosty",
+      "https://t.me/ONlineOhranaTrudaEcoBIOT",
+      "t.me/haccpmore",
     ],
     [
       { name: "session1", label: "Аккаунт 1", status: "Активен", reason: "Работает стабильно", lastCheck: "27.04.2026 16:20" },
-      { name: "session2", label: "Аккаунт 2", status: "Лимит", reason: "FloodWait / временное ограничение", lastCheck: "27.04.2026 15:40" },
-      { name: "session3", label: "Аккаунт 3", status: "Прогрев", reason: "Пока не введён в полную работу", lastCheck: "27.04.2026 14:10" },
+      { name: "session2", label: "Аккаунт 2", status: "Активен", reason: "Работает стабильно", lastCheck: "27.04.2026 16:18" },
     ],
     {
-      first: "Привет, есть нормальные подрядчики по клинингу? А то попадаются одни распиздяи. Мне главное, чтобы на совесть делали и стандарты соблюдали.",
-      second:
-        "Если в Питере или Казани, то могу рекомендовать этих ребят — http://avito.ru/brands/89d521a4fe29873dfd9f1f42c7e90b31/all/predlozheniya_uslug?src=search_seller_info&iid=7805656263&sellerId=19f4fba8e5fa09e037bed1c9bb1516d8",
-      third: "Кстати, тоже к ним обращались, только через вк — https://vk.com/prommclean",
-    }
-  ),
-  createProject(
-    "cleaning",
-    "Клининг",
-    ["https://t.me/sanerity", "https://t.me/marafonhassp", "https://t.me/bezopasnosty"],
-    [
-      { name: "clean_1", label: "Клининг 1", status: "Активен", reason: "Работает", lastCheck: "27.04.2026 16:10" },
-      { name: "clean_2", label: "Клининг 2", status: "Требует вход", reason: "Нужен новый код входа", lastCheck: "27.04.2026 13:55" },
-    ],
-    {
-      first: "Подскажите, кто реально нормально закрывает клининг для производств?",
-      second: "Могу скинуть подрядчика, у которого норм по стандартам и срокам.",
-      third: "Да, подтверждаю, с ними уже работали — всё ок.",
-    }
-  ),
-  createProject(
-    "realty",
-    "Недвижка",
-    ["https://t.me/ONlineOhranaTrudaEcoBIOT", "https://t.me/haccpmore"],
-    [
-      { name: "realty_1", label: "Недвижка 1", status: "Заблокирован", reason: "Подозрение на бан / ограничения Telegram", lastCheck: "27.04.2026 11:25" },
-      { name: "realty_2", label: "Недвижка 2", status: "Активен", reason: "Работает", lastCheck: "27.04.2026 16:00" },
-    ],
-    {
-      first: "Кто сейчас реально ведёт клиентов по недвижимости без слива бюджета?",
-      second: "Есть вариант, могу скинуть ребят, с которыми работали.",
-      third: "Тоже слышал про них нормальные отзывы.",
+      first: "Привет, есть нормальные подрядчики по клинингу? А то попадаются одни распиздяи\nМне главное, чтобы на совесть делали и стандарты соблюдали",
+      second: "Если в Питере или Казани, то могу рекомендовать этих ребят - http://avito.ru/brands/89d521a4fe29873dfd9f1f42c7e90b31/all/predlozheniya_uslug?src=search_seller_info&iid=7805656263&sellerId=19f4fba8e5fa09e037bed1c9bb1516d8",
+      third: "Кстати, тоже к ним обращались, только через вк - https://vk.com/prommclean",
     }
   ),
 ];
@@ -237,6 +212,9 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
       <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
         <h3 className="text-xl font-bold">Аккаунты проекта «{project.name}»</h3>
         <p className="mt-1 text-sm text-slate-500">Пошаговый мастер добавления аккаунта: имя сессии → телефон → код → 2FA при необходимости.</p>
+        <div className="mt-3 rounded-2xl bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700">
+          Лимит на проект: максимум 3 аккаунта. Сейчас: {project.accounts.length} / 3.
+        </div>
 
         <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
           <span className={step === 1 ? "rounded-full bg-slate-950 px-3 py-2 text-white" : "rounded-full bg-white px-3 py-2"}>1. Данные</span>
@@ -265,7 +243,8 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
               <input type="checkbox" checked={needPassword} onChange={(e) => setNeedPassword(e.target.checked)} />
               На аккаунте включена двухфакторная аутентификация
             </label>
-            <button onClick={sendCode} className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">Отправить код</button>
+            <button disabled={project.accounts.length >= 3} onClick={sendCode} className={project.accounts.length >= 3 ? "inline-flex items-center justify-center rounded-2xl bg-slate-300 px-5 py-3 text-sm font-semibold text-slate-500 cursor-not-allowed" : "inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"}>Отправить код</button>
+            {project.accounts.length >= 3 && <p className="text-sm text-rose-600">Нельзя добавить больше 3 аккаунтов в этот проект.</p>}
           </div>
         )}
 
@@ -491,21 +470,17 @@ export default function BotAnalyticsDashboard() {
   }, [activeProject]);
 
   const addProject = () => {
-    const name = newProjectName.trim();
-    if (!name) return;
-    const id = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-zA-Zа-яА-Я0-9-_]/g, "");
-    const project = createProject(id || `project-${Date.now()}`, name, [], [], { first: "", second: "", third: "" });
-    setProjects((prev) => [...prev, project]);
-    setActiveProjectId(project.id);
-    setActiveSection("accounts");
-    setNewProjectName("");
+    return;
   };
 
   const updateProject = (projectId, updater) => {
     setProjects((prev) => prev.map((project) => (project.id === projectId ? updater(project) : project)));
   };
 
-  const addAccount = (projectId, account) => updateProject(projectId, (project) => ({ ...project, accounts: [account, ...project.accounts] }));
+  const addAccount = (projectId, account) => updateProject(projectId, (project) => {
+    if (project.accounts.length >= 3) return project;
+    return { ...project, accounts: [account, ...project.accounts] };
+  });
   const deleteAccount = (projectId, accountName) => updateProject(projectId, (project) => ({ ...project, accounts: project.accounts.filter((account) => account.name !== accountName) }));
   const updateMessages = (projectId, messages) => updateProject(projectId, (project) => ({ ...project, messages }));
   const addChat = (projectId, chat) => updateProject(projectId, (project) => ({ ...project, chats: [chat, ...project.chats] }));
@@ -539,7 +514,7 @@ export default function BotAnalyticsDashboard() {
             <div>
               <p className="text-sm font-semibold uppercase tracking-widest text-slate-400">Bot analytics</p>
               <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Мультипроектная панель Telegram-бота</h1>
-              <p className="mt-2 max-w-2xl text-slate-500">Один бот, внутри которого можно держать 5–20 проектов с отдельными аккаунтами, сообщениями и чатами.</p>
+              <p className="mt-2 max-w-2xl text-slate-500">Один бот, внутри которого сейчас оставляем одну рабочую папку. Пока одна папка работает, запускать вторую нельзя.</p>
             </div>
           </div>
 
@@ -615,21 +590,20 @@ export default function BotAnalyticsDashboard() {
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-widest text-slate-400">Проекты / папки</p>
                   <h2 className="mt-2 text-2xl font-bold">Выбор проекта</h2>
-                  <p className="mt-2 text-sm text-slate-500">Сначала заходишь в папку проекта, а уже внутри неё управляешь аккаунтами, сообщениями и чатами.</p>
+                  <p className="mt-2 text-sm text-slate-500">Сейчас оставляем только одну рабочую папку — «Клининг». Когда одна папка работает, запуск другой блокируется.</p>
                 </div>
-                <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
-                  <input value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} placeholder="Название новой папки, например Агентство" className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
-                  <button onClick={addProject} className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">Создать папку</button>
+                <div className="mt-5 rounded-2xl bg-amber-50 px-4 py-4 text-sm font-medium text-amber-800">
+                  Пока в интерфейсе активна одна рабочая папка. Масштабирование на несколько проектов добавим позже.
                 </div>
                 <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {projects.map((project) => (
                     <div key={project.id} className="space-y-2">
                       <ProjectFolder project={project} isActive={activeProjectId === project.id} onClick={setActiveProjectId} />
                       <button
-                        onClick={() => deleteProject(project.id)}
-                        className="w-full rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+                        disabled
+                        className="w-full rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-400 cursor-not-allowed"
                       >
-                        Удалить папку
+                        Папка зафиксирована
                       </button>
                     </div>
                   ))}
