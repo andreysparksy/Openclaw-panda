@@ -24,7 +24,7 @@
       body {
         margin: 0;
         min-height: 100vh;
-        font-family: Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif;
+        font-family: "Arial Black", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
         color: var(--text);
         background: var(--bg);
         overflow-x: hidden;
@@ -46,13 +46,13 @@
       .page::before {
         content: "ТАРГЕТ";
         position: absolute;
-        top: -70px;
-        left: 4vw;
-        font-size: clamp(160px, 24vw, 390px);
+        top: -82px;
+        left: 3vw;
+        font-size: clamp(170px, 25vw, 405px);
         line-height: .75;
-        letter-spacing: -0.07em;
-        color: rgba(0, 209, 87, 0.22);
-        transform: scaleX(1.12);
+        letter-spacing: -0.075em;
+        color: rgba(0, 209, 87, 0.24);
+        transform: scaleX(1.08);
         z-index: 0;
         white-space: nowrap;
       }
@@ -175,38 +175,40 @@
         min-height: calc(100vh - 72px);
         margin: 0 auto;
         display: grid;
-        grid-template-columns: 1fr 520px;
+        grid-template-columns: minmax(560px, 1fr) 520px;
         align-items: center;
-        gap: 30px;
+        gap: 24px;
         padding: 38px 0 64px;
       }
 
       .content {
         position: relative;
         z-index: 3;
-        padding-left: 165px;
+        padding-left: 120px;
+        padding-top: 34px;
       }
 
       h1 {
         margin: 0;
-        max-width: 520px;
-        font-size: clamp(74px, 9.4vw, 132px);
-        line-height: .78;
-        letter-spacing: -0.07em;
+        max-width: 610px;
+        font-size: clamp(68px, 8.2vw, 116px);
+        line-height: .86;
+        letter-spacing: -0.055em;
         text-transform: uppercase;
         text-shadow: 0 4px 0 rgba(0,0,0,.35);
       }
 
       .side-copy {
         position: absolute;
-        left: 430px;
-        top: 214px;
-        width: 300px;
+        left: 365px;
+        top: 260px;
+        width: 330px;
         font-family: Arial, sans-serif;
-        font-weight: 800;
-        font-size: 19px;
-        line-height: 1.2;
-        color: rgba(255,255,255,.92);
+        font-weight: 900;
+        font-size: 18px;
+        line-height: 1.18;
+        color: rgba(255,255,255,.94);
+        text-shadow: 0 2px 16px rgba(0,0,0,.7);
       }
 
       .highlight {
@@ -219,7 +221,7 @@
       }
 
       .buttons {
-        margin-top: 64px;
+        margin-top: 58px;
         display: flex;
         gap: 8px;
       }
@@ -268,6 +270,7 @@
         height: 650px;
         align-self: end;
         z-index: 2;
+        transform: translateX(18px);
       }
 
       .panda-glow {
@@ -298,11 +301,11 @@
 
       .panda {
         position: absolute;
-        right: 10px;
-        bottom: 40px;
-        width: 430px;
-        height: 560px;
-        filter: drop-shadow(-28px 28px 40px rgba(0,0,0,.65));
+        right: 6px;
+        bottom: 28px;
+        width: 455px;
+        height: 585px;
+        filter: drop-shadow(-32px 30px 44px rgba(0,0,0,.72));
       }
 
       .panda-body {
@@ -321,16 +324,16 @@
 
       .panda-head {
         position: absolute;
-        right: 105px;
-        top: 50px;
-        width: 230px;
-        height: 210px;
+        right: 104px;
+        top: 44px;
+        width: 238px;
+        height: 218px;
         border-radius: 50% 48% 45% 48%;
         background:
-          radial-gradient(circle at 72% 35%, rgba(0,209,87,.34), transparent 18%),
-          radial-gradient(circle at 45% 44%, #fff 0 34%, #f5f7f1 35% 62%, #d9ddd6 100%);
+          radial-gradient(circle at 72% 35%, rgba(0,209,87,.28), transparent 18%),
+          radial-gradient(circle at 45% 44%, #fff 0 34%, #f5f7f1 35% 62%, #d5dad1 100%);
         transform: rotate(-7deg);
-        box-shadow: inset -18px -10px 26px rgba(0,0,0,.18);
+        box-shadow: inset -22px -13px 30px rgba(0,0,0,.22), 0 0 38px rgba(0,209,87,.13);
       }
 
       .ear {
@@ -347,9 +350,9 @@
 
       .eye {
         position: absolute;
-        top: 112px;
-        width: 76px;
-        height: 58px;
+        top: 111px;
+        width: 82px;
+        height: 64px;
         border-radius: 50%;
         background: #050605;
         transform: rotate(-15deg);
@@ -542,7 +545,7 @@
 
       <section class="hero" id="top">
         <div class="content">
-          <h1>Стань<br />видимым<br />брендом</h1>
+          <h1>Стань<br />брендом<br />в VK Ads</h1>
           <p class="side-copy">
             которому доверяют <span class="highlight">клиенты из VK Ads</span><br />и который стабильно получает заявки
           </p>
