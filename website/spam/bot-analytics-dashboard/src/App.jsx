@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+
+const API_BASE = "http://127.0.0.1:8787/api";
 
 
 const projectSections = [
@@ -155,7 +157,7 @@ function getStatusClasses(status) {
   return "bg-slate-100 text-slate-600";
 }
 
-function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
+function AccountsManager({ project, onAddAccount, onDeleteAccount, onReloadProject }) {
   const [step, setStep] = useState(1);
   const [draft, setDraft] = useState({
     sessionName: "",
@@ -166,45 +168,78 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
   });
   const [needPassword, setNeedPassword] = useState(false);
   const [resultText, setResultText] = useState("");
+  const [isBusy, setIsBusy] = useState(false);
 
-  const sendCode = () => {
+  const sendCode = async () => {
     if (!draft.sessionName.trim() || !draft.phone.trim()) return;
-    setResultText("Код отправлен. Теперь введи код из Telegram.");
-    setStep(2);
-  };
-
-  const confirmCode = () => {
-    if (!draft.code.trim()) return;
-    if (needPassword) {
-      setStep(3);
-      return;
+    setIsBusy(true);
+    try {
+      const response = await fetch(`${API_BASE}/send-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionName: draft.sessionName.trim(), phone: draft.phone.trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Не удалось отправить код");
+      setResultText(`${data.message}. Проверь Telegram.`);
+      setStep(2);
+    } catch (error) {
+      setResultText(error.message || "Ошибка отправки кода");
+    } finally {
+      setIsBusy(false);
     }
-    onAddAccount(project.id, {
-      name: draft.sessionName.trim(),
-      label: draft.sessionName.trim(),
-      status: draft.status,
-      reason: draft.status === "Активен" ? "Имя позже подтянется из Telegram" : "Статус задан вручную",
-      lastCheck: "Только что",
-    });
-    setResultText("Аккаунт добавлен в интерфейс проекта.");
-    setDraft({ sessionName: "", phone: "", code: "", password: "", status: "Активен" });
-    setNeedPassword(false);
-    setStep(1);
   };
 
-  const confirmPassword = () => {
+  const confirmCode = async () => {
+    if (!draft.code.trim()) return;
+    setIsBusy(true);
+    try {
+      const response = await fetch(`${API_BASE}/verify-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionName: draft.sessionName.trim(), code: draft.code.trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Не удалось подтвердить код");
+      if (data.needPassword) {
+        setNeedPassword(true);
+        setResultText(data.message || "Нужен пароль 2FA");
+        setStep(3);
+        return;
+      }
+      setResultText(data.message || "Аккаунт подключён");
+      setDraft({ sessionName: "", phone: "", code: "", password: "", status: "Активен" });
+      setNeedPassword(false);
+      setStep(1);
+      await onReloadProject();
+    } catch (error) {
+      setResultText(error.message || "Ошибка подтверждения кода");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const confirmPassword = async () => {
     if (!draft.password.trim()) return;
-    onAddAccount(project.id, {
-      name: draft.sessionName.trim(),
-      label: draft.sessionName.trim(),
-      status: draft.status,
-      reason: "Имя позже подтянется из Telegram после 2FA",
-      lastCheck: "Только что",
-    });
-    setResultText("Аккаунт добавлен после подтверждения 2FA.");
-    setDraft({ sessionName: "", phone: "", code: "", password: "", status: "Активен" });
-    setNeedPassword(false);
-    setStep(1);
+    setIsBusy(true);
+    try {
+      const response = await fetch(`${API_BASE}/verify-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionName: draft.sessionName.trim(), password: draft.password.trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Не удалось подтвердить пароль");
+      setResultText(data.message || "Аккаунт подключён через 2FA");
+      setDraft({ sessionName: "", phone: "", code: "", password: "", status: "Активен" });
+      setNeedPassword(false);
+      setStep(1);
+      await onReloadProject();
+    } catch (error) {
+      setResultText(error.message || "Ошибка 2FA");
+    } finally {
+      setIsBusy(false);
+    }
   };
 
   return (
@@ -245,7 +280,7 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
               <input type="checkbox" checked={needPassword} onChange={(e) => setNeedPassword(e.target.checked)} />
               На аккаунте включена двухфакторная аутентификация
             </label>
-            <button disabled={project.accounts.length >= 3} onClick={sendCode} className={project.accounts.length >= 3 ? "inline-flex items-center justify-center rounded-2xl bg-slate-300 px-5 py-3 text-sm font-semibold text-slate-500 cursor-not-allowed" : "inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"}>Отправить код</button>
+            <button disabled={project.accounts.length >= 3 || isBusy} onClick={sendCode} className={project.accounts.length >= 3 || isBusy ? "inline-flex items-center justify-center rounded-2xl bg-slate-300 px-5 py-3 text-sm font-semibold text-slate-500 cursor-not-allowed" : "inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"}>{isBusy ? "Отправляем..." : "Отправить код"}</button>
             {project.accounts.length >= 3 && <p className="text-sm text-rose-600">Нельзя добавить больше 3 аккаунтов в этот проект.</p>}
           </div>
         )}
@@ -254,7 +289,7 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
           <div className="mt-5 space-y-3">
             <input value={draft.code} onChange={(e) => setDraft((p) => ({ ...p, code: e.target.value }))} placeholder="Код из Telegram" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
             <div className="flex flex-wrap gap-3">
-              <button onClick={confirmCode} className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">Подтвердить код</button>
+              <button disabled={isBusy} onClick={confirmCode} className={isBusy ? "inline-flex items-center justify-center rounded-2xl bg-slate-300 px-5 py-3 text-sm font-semibold text-slate-500 cursor-not-allowed" : "inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"}>{isBusy ? "Проверяем..." : "Подтвердить код"}</button>
               <button onClick={() => setStep(1)} className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">Назад</button>
             </div>
           </div>
@@ -264,7 +299,7 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
           <div className="mt-5 space-y-3">
             <input value={draft.password} onChange={(e) => setDraft((p) => ({ ...p, password: e.target.value }))} placeholder="Пароль двухфакторной аутентификации" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
             <div className="flex flex-wrap gap-3">
-              <button onClick={confirmPassword} className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">Подтвердить пароль</button>
+              <button disabled={isBusy} onClick={confirmPassword} className={isBusy ? "inline-flex items-center justify-center rounded-2xl bg-slate-300 px-5 py-3 text-sm font-semibold text-slate-500 cursor-not-allowed" : "inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"}>{isBusy ? "Проверяем..." : "Подтвердить пароль"}</button>
               <button onClick={() => setStep(2)} className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">Назад</button>
             </div>
           </div>
@@ -397,7 +432,7 @@ export default function BotAnalyticsDashboard() {
   const [projects, setProjects] = useState(initialProjects);
   const [activeProjectId, setActiveProjectId] = useState(initialProjects[0].id);
   const [activeSection, setActiveSection] = useState("accounts");
-  const [newProjectName, setNewProjectName] = useState("");
+  const [backendStatus, setBackendStatus] = useState("Загружаем состояние бота...");
 
   const activeProject = useMemo(() => projects.find((project) => project.id === activeProjectId) || projects[0], [projects, activeProjectId]);
 
@@ -471,6 +506,27 @@ export default function BotAnalyticsDashboard() {
     };
   }, [activeProject]);
 
+  const loadBackendState = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/state`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Не удалось загрузить состояние бота");
+      if (data?.project) {
+        setProjects([
+          createProject(data.project.id, data.project.name, data.project.chats || [], data.project.accounts || [], data.project.messages || { first: "", second: "", third: "" }),
+        ]);
+        setActiveProjectId(data.project.id);
+        setBackendStatus(`Связка активна. Аккаунтов в учёте: ${(data.project.accounts || []).length}.`);
+      }
+    } catch (error) {
+      setBackendStatus(`Backend недоступен: ${error.message}`);
+    }
+  };
+
+  useEffect(() => {
+    loadBackendState();
+  }, []);
+
   const addProject = () => {
     return;
   };
@@ -501,7 +557,7 @@ export default function BotAnalyticsDashboard() {
 
   const renderSectionContent = () => {
     if (!activeProject) return null;
-    if (activeSection === "accounts") return <AccountsManager project={activeProject} onAddAccount={addAccount} onDeleteAccount={deleteAccount} />;
+    if (activeSection === "accounts") return <AccountsManager project={activeProject} onAddAccount={addAccount} onDeleteAccount={deleteAccount} onReloadProject={loadBackendState} />;
     if (activeSection === "messages") return <MessagesManager project={activeProject} onUpdateMessages={updateMessages} />;
     if (activeSection === "add-chat") return <AddChatManager project={activeProject} onAddChat={addChat} />;
     return <ChatListManager project={activeProject} onDeleteChat={deleteChat} />;
@@ -516,7 +572,8 @@ export default function BotAnalyticsDashboard() {
             <div>
               <p className="text-sm font-semibold uppercase tracking-widest text-slate-400">Bot analytics</p>
               <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Мультипроектная панель Telegram-бота</h1>
-              <p className="mt-2 max-w-2xl text-slate-500">Один бот, внутри которого сейчас оставляем одну рабочую папку. Сейчас в учёте 3 аккаунта: session1, session2 и admin_bot.</p>
+              <p className="mt-2 max-w-2xl text-slate-500">Один бот, внутри которого сейчас оставляем одну рабочую папку. Состояние теперь можно подтягивать прямо из telegram-bot.</p>
+            <p className="mt-2 text-sm font-medium text-slate-600">{backendStatus}</p>
             </div>
           </div>
 
