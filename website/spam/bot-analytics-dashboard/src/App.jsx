@@ -51,9 +51,9 @@ const initialProjects = [
       "https://t.me/INTEKPROM",
     ],
     [
-      { name: "session1", label: "Аккаунт 1", status: "Активен" },
-      { name: "session2", label: "Аккаунт 2", status: "Активен" },
-      { name: "session3", label: "Аккаунт 3", status: "Прогрев" },
+      { name: "session1", label: "Аккаунт 1", status: "Активен", reason: "Работает стабильно", lastCheck: "27.04.2026 16:20" },
+      { name: "session2", label: "Аккаунт 2", status: "Лимит", reason: "FloodWait / временное ограничение", lastCheck: "27.04.2026 15:40" },
+      { name: "session3", label: "Аккаунт 3", status: "Прогрев", reason: "Пока не введён в полную работу", lastCheck: "27.04.2026 14:10" },
     ],
     {
       first: "Привет, есть нормальные подрядчики по клинингу? А то попадаются одни распиздяи. Мне главное, чтобы на совесть делали и стандарты соблюдали.",
@@ -67,8 +67,8 @@ const initialProjects = [
     "Клининг",
     ["https://t.me/sanerity", "https://t.me/marafonhassp", "https://t.me/bezopasnosty"],
     [
-      { name: "clean_1", label: "Клининг 1", status: "Активен" },
-      { name: "clean_2", label: "Клининг 2", status: "Активен" },
+      { name: "clean_1", label: "Клининг 1", status: "Активен", reason: "Работает", lastCheck: "27.04.2026 16:10" },
+      { name: "clean_2", label: "Клининг 2", status: "Требует вход", reason: "Нужен новый код входа", lastCheck: "27.04.2026 13:55" },
     ],
     {
       first: "Подскажите, кто реально нормально закрывает клининг для производств?",
@@ -81,8 +81,8 @@ const initialProjects = [
     "Недвижка",
     ["https://t.me/ONlineOhranaTrudaEcoBIOT", "https://t.me/haccpmore"],
     [
-      { name: "realty_1", label: "Недвижка 1", status: "Прогрев" },
-      { name: "realty_2", label: "Недвижка 2", status: "Активен" },
+      { name: "realty_1", label: "Недвижка 1", status: "Заблокирован", reason: "Подозрение на бан / ограничения Telegram", lastCheck: "27.04.2026 11:25" },
+      { name: "realty_2", label: "Недвижка 2", status: "Активен", reason: "Работает", lastCheck: "27.04.2026 16:00" },
     ],
     {
       first: "Кто сейчас реально ведёт клиентов по недвижимости без слива бюджета?",
@@ -242,6 +242,13 @@ function SectionCard({ section, isActive, onClick }) {
   );
 }
 
+function getStatusClasses(status) {
+  if (status === "Активен") return "bg-emerald-50 text-emerald-700";
+  if (status === "Прогрев" || status === "Лимит") return "bg-amber-50 text-amber-700";
+  if (status === "Заблокирован") return "bg-rose-50 text-rose-700";
+  return "bg-slate-100 text-slate-600";
+}
+
 function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
   const [step, setStep] = useState(1);
   const [draft, setDraft] = useState({
@@ -271,6 +278,8 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
       name: draft.sessionName.trim(),
       label: draft.displayName.trim() || draft.sessionName.trim(),
       status: draft.status,
+      reason: draft.status === "Активен" ? "Аккаунт добавлен вручную" : "Статус задан вручную",
+      lastCheck: "Только что",
     });
     setResultText("Аккаунт добавлен в интерфейс проекта.");
     setDraft({ sessionName: "", phone: "", code: "", password: "", displayName: "", status: "Активен" });
@@ -284,6 +293,8 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
       name: draft.sessionName.trim(),
       label: draft.displayName.trim() || draft.sessionName.trim(),
       status: draft.status,
+      reason: "Аккаунт добавлен после 2FA",
+      lastCheck: "Только что",
     });
     setResultText("Аккаунт добавлен после подтверждения 2FA.");
     setDraft({ sessionName: "", phone: "", code: "", password: "", displayName: "", status: "Активен" });
@@ -315,6 +326,9 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
                 <option>Активен</option>
                 <option>Прогрев</option>
                 <option>Лимит</option>
+                <option>Заблокирован</option>
+                <option>Требует вход</option>
+                <option>Ошибка</option>
               </select>
             </div>
             <label className="inline-flex items-center gap-2 text-sm text-slate-600">
@@ -352,15 +366,22 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
         <div className="overflow-hidden rounded-2xl border border-slate-200">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase tracking-widest text-slate-400">
-              <tr><th className="px-4 py-4">Сессия</th><th className="px-4 py-4">Название</th><th className="px-4 py-4">Статус</th><th className="px-4 py-4 text-right">Действие</th></tr>
+              <tr><th className="px-4 py-4">Сессия</th><th className="px-4 py-4">Название</th><th className="px-4 py-4">Статус</th><th className="px-4 py-4">Причина</th><th className="px-4 py-4">Последняя проверка</th><th className="px-4 py-4 text-right">Действие</th></tr>
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
               {project.accounts.map((account) => (
                 <tr key={account.name}>
                   <td className="px-4 py-4 font-semibold text-slate-950">{account.name}</td>
                   <td className="px-4 py-4 text-slate-600">{account.label}</td>
-                  <td className="px-4 py-4 text-slate-600">{account.status}</td>
+                  <td className="px-4 py-4 text-slate-600">
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusClasses(account.status)}`}>
+                      {account.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-slate-600">{account.reason || "—"}</td>
+                  <td className="px-4 py-4 text-slate-600">{account.lastCheck || "—"}</td>
                   <td className="px-4 py-4 text-right">
+                    <button className="mr-2 rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200">Проверить</button>
                     <button onClick={() => onDeleteAccount(project.id, account.name)} className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100">Удалить</button>
                   </td>
                 </tr>
