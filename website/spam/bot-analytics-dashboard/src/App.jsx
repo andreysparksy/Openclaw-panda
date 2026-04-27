@@ -25,10 +25,10 @@ const projectStatuses = [
 ];
 
 const accountGroups = [
-  { label: "Живые", value: 248, percent: 82, icon: "✅" },
-  { label: "Прогрев", value: 31, percent: 10, icon: "⏱️" },
-  { label: "Лимиты", value: 18, percent: 6, icon: "⚡" },
-  { label: "Отвалились", value: 7, percent: 2, icon: "⛔" },
+  { label: "Активные", value: 248, percent: 82, icon: "✅", hint: "можно использовать в рассылке" },
+  { label: "На прогреве", value: 31, percent: 10, icon: "⏱️", hint: "ещё не в полном рабочем режиме" },
+  { label: "Лимит", value: 18, percent: 6, icon: "⚡", hint: "есть ограничения / flood" },
+  { label: "Заблокированы", value: 7, percent: 2, icon: "⛔", hint: "выпали из работы" },
 ];
 
 const projectSections = [
@@ -586,7 +586,7 @@ export default function BotAnalyticsDashboard() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-widest text-slate-400">Аккаунты</p>
-                  <h2 className="mt-2 text-2xl font-bold">Состояние базы</h2>
+                  <h2 className="mt-2 text-2xl font-bold">Состояние аккаунтов</h2>
                 </div>
                 <span className="text-3xl">👥</span>
               </div>
@@ -599,7 +599,7 @@ export default function BotAnalyticsDashboard() {
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-xl shadow-sm">{group.icon}</div>
                         <div>
                           <p className="font-semibold">{group.label}</p>
-                          <p className="text-sm text-slate-500">{group.value} аккаунтов</p>
+                          <p className="text-sm text-slate-500">{group.value} аккаунтов · {group.hint}</p>
                         </div>
                       </div>
                       <p className="text-sm font-bold text-slate-700">{group.percent}%</p>
