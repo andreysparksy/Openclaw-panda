@@ -242,7 +242,7 @@ function SectionCard({ section, isActive, onClick }) {
   );
 }
 
-function AccountsManager({ project, onAddAccount }) {
+function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
   const [draft, setDraft] = useState({ sessionName: "", displayName: "", status: "Активен" });
 
   const submit = () => {
@@ -276,11 +276,23 @@ function AccountsManager({ project, onAddAccount }) {
         <div className="overflow-hidden rounded-2xl border border-slate-200">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase tracking-widest text-slate-400">
-              <tr><th className="px-4 py-4">Сессия</th><th className="px-4 py-4">Название</th><th className="px-4 py-4">Статус</th></tr>
+              <tr><th className="px-4 py-4">Сессия</th><th className="px-4 py-4">Название</th><th className="px-4 py-4">Статус</th><th className="px-4 py-4 text-right">Действие</th></tr>
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
               {project.accounts.map((account) => (
-                <tr key={account.name}><td className="px-4 py-4 font-semibold text-slate-950">{account.name}</td><td className="px-4 py-4 text-slate-600">{account.label}</td><td className="px-4 py-4 text-slate-600">{account.status}</td></tr>
+                <tr key={account.name}>
+                  <td className="px-4 py-4 font-semibold text-slate-950">{account.name}</td>
+                  <td className="px-4 py-4 text-slate-600">{account.label}</td>
+                  <td className="px-4 py-4 text-slate-600">{account.status}</td>
+                  <td className="px-4 py-4 text-right">
+                    <button
+                      onClick={() => onDeleteAccount(project.id, account.name)}
+                      className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                    >
+                      Удалить
+                    </button>
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -335,7 +347,7 @@ function AddChatManager({ project, onAddChat }) {
   );
 }
 
-function ChatListManager({ project }) {
+function ChatListManager({ project, onDeleteChat }) {
   const [query, setQuery] = useState("");
   const filteredChats = useMemo(() => project.chats.filter((chat) => chat.toLowerCase().includes(query.toLowerCase())), [project.chats, query]);
 
@@ -354,10 +366,21 @@ function ChatListManager({ project }) {
 
       <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-widest text-slate-400"><tr><th className="px-4 py-4">#</th><th className="px-4 py-4">Чат</th></tr></thead>
+          <thead className="bg-slate-50 text-xs uppercase tracking-widest text-slate-400"><tr><th className="px-4 py-4">#</th><th className="px-4 py-4">Чат</th><th className="px-4 py-4 text-right">Действие</th></tr></thead>
           <tbody className="divide-y divide-slate-200 bg-white">
             {filteredChats.map((chat, index) => (
-              <tr key={`${chat}-${index}`}><td className="px-4 py-4 font-semibold text-slate-500">{index + 1}</td><td className="px-4 py-4 text-slate-700">{chat}</td></tr>
+              <tr key={`${chat}-${index}`}>
+                <td className="px-4 py-4 font-semibold text-slate-500">{index + 1}</td>
+                <td className="px-4 py-4 text-slate-700">{chat}</td>
+                <td className="px-4 py-4 text-right">
+                  <button
+                    onClick={() => onDeleteChat(project.id, chat)}
+                    className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                  >
+                    Удалить
+                  </button>
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>
@@ -391,15 +414,28 @@ export default function BotAnalyticsDashboard() {
   };
 
   const addAccount = (projectId, account) => updateProject(projectId, (project) => ({ ...project, accounts: [account, ...project.accounts] }));
+  const deleteAccount = (projectId, accountName) => updateProject(projectId, (project) => ({ ...project, accounts: project.accounts.filter((account) => account.name !== accountName) }));
   const updateMessages = (projectId, messages) => updateProject(projectId, (project) => ({ ...project, messages }));
   const addChat = (projectId, chat) => updateProject(projectId, (project) => ({ ...project, chats: [chat, ...project.chats] }));
+  const deleteChat = (projectId, chatValue) => updateProject(projectId, (project) => ({ ...project, chats: project.chats.filter((chat) => chat !== chatValue) }));
+  const deleteProject = (projectId) => {
+    setProjects((prev) => {
+      const next = prev.filter((project) => project.id !== projectId);
+      if (!next.length) return prev;
+      if (activeProjectId === projectId) {
+        setActiveProjectId(next[0].id);
+        setActiveSection("accounts");
+      }
+      return next;
+    });
+  };
 
   const renderSectionContent = () => {
     if (!activeProject) return null;
-    if (activeSection === "accounts") return <AccountsManager project={activeProject} onAddAccount={addAccount} />;
+    if (activeSection === "accounts") return <AccountsManager project={activeProject} onAddAccount={addAccount} onDeleteAccount={deleteAccount} />;
     if (activeSection === "messages") return <MessagesManager project={activeProject} onUpdateMessages={updateMessages} />;
     if (activeSection === "add-chat") return <AddChatManager project={activeProject} onAddChat={addChat} />;
-    return <ChatListManager project={activeProject} />;
+    return <ChatListManager project={activeProject} onDeleteChat={deleteChat} />;
   };
 
   return (
@@ -495,7 +531,15 @@ export default function BotAnalyticsDashboard() {
                 </div>
                 <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {projects.map((project) => (
-                    <ProjectFolder key={project.id} project={project} isActive={activeProjectId === project.id} onClick={setActiveProjectId} />
+                    <div key={project.id} className="space-y-2">
+                      <ProjectFolder project={project} isActive={activeProjectId === project.id} onClick={setActiveProjectId} />
+                      <button
+                        onClick={() => deleteProject(project.id)}
+                        className="w-full rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+                      >
+                        Удалить папку
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
