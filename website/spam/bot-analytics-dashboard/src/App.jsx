@@ -248,8 +248,10 @@ function AccountsManager({ project, onDeleteAccount, onReloadProject }) {
     if (!confirmed) return;
     setDeletingAccount(accountName);
     try {
-      const response = await fetch(`${API_BASE}/account/${encodeURIComponent(accountName)}`, {
-        method: "DELETE",
+      const response = await fetch(`${API_BASE}/delete-account`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionName: accountName }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || "Не удалось удалить аккаунт");

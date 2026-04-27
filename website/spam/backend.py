@@ -66,6 +66,9 @@ class VerifyPasswordRequest(BaseModel):
     sessionName: str
     password: str
 
+class DeleteAccountRequest(BaseModel):
+    sessionName: str
+
 
 def now_str() -> str:
     return datetime.now(timezone.utc).strftime("%d.%m.%Y %H:%M UTC")
@@ -266,8 +269,9 @@ async def verify_password(payload: VerifyPasswordRequest):
         raise HTTPException(status_code=500, detail=f'Backend: {exc}')
 
 
-@app.delete('/api/account/{session_name}')
-async def delete_account(session_name: str):
+@app.post('/api/delete-account')
+async def delete_account(payload: DeleteAccountRequest):
+    session_name = payload.sessionName.strip()
     existing_accounts = session_files()
     if session_name not in existing_accounts:
         raise HTTPException(status_code=404, detail='Аккаунт не найден')
