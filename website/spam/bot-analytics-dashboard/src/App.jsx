@@ -161,7 +161,6 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
     phone: "",
     code: "",
     password: "",
-    displayName: "",
     status: "Активен",
   });
   const [needPassword, setNeedPassword] = useState(false);
@@ -181,13 +180,13 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
     }
     onAddAccount(project.id, {
       name: draft.sessionName.trim(),
-      label: draft.displayName.trim() || draft.sessionName.trim(),
+      label: draft.sessionName.trim(),
       status: draft.status,
-      reason: draft.status === "Активен" ? "Аккаунт добавлен вручную" : "Статус задан вручную",
+      reason: draft.status === "Активен" ? "Имя позже подтянется из Telegram" : "Статус задан вручную",
       lastCheck: "Только что",
     });
     setResultText("Аккаунт добавлен в интерфейс проекта.");
-    setDraft({ sessionName: "", phone: "", code: "", password: "", displayName: "", status: "Активен" });
+    setDraft({ sessionName: "", phone: "", code: "", password: "", status: "Активен" });
     setNeedPassword(false);
     setStep(1);
   };
@@ -196,13 +195,13 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
     if (!draft.password.trim()) return;
     onAddAccount(project.id, {
       name: draft.sessionName.trim(),
-      label: draft.displayName.trim() || draft.sessionName.trim(),
+      label: draft.sessionName.trim(),
       status: draft.status,
-      reason: "Аккаунт добавлен после 2FA",
+      reason: "Имя позже подтянется из Telegram после 2FA",
       lastCheck: "Только что",
     });
     setResultText("Аккаунт добавлен после подтверждения 2FA.");
-    setDraft({ sessionName: "", phone: "", code: "", password: "", displayName: "", status: "Активен" });
+    setDraft({ sessionName: "", phone: "", code: "", password: "", status: "Активен" });
     setNeedPassword(false);
     setStep(1);
   };
@@ -224,9 +223,11 @@ function AccountsManager({ project, onAddAccount, onDeleteAccount }) {
 
         {step === 1 && (
           <div className="mt-5 space-y-3">
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-1">
               <input value={draft.sessionName} onChange={(e) => setDraft((p) => ({ ...p, sessionName: e.target.value }))} placeholder="Имя сессии" className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
-              <input value={draft.displayName} onChange={(e) => setDraft((p) => ({ ...p, displayName: e.target.value }))} placeholder="Отображаемое имя" className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
+            </div>
+            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-500 ring-1 ring-slate-200">
+              Имя аккаунта подтянется автоматически из Telegram после успешного входа.
             </div>
             <div className="grid gap-3 md:grid-cols-[1fr_220px]">
               <input value={draft.phone} onChange={(e) => setDraft((p) => ({ ...p, phone: e.target.value }))} placeholder="Номер телефона, например +79991234567" className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400" />
