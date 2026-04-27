@@ -28,6 +28,7 @@ const initialProjects = [
     [
       { name: "session1", label: "Аккаунт 1", status: "Активен", reason: "Работает стабильно", lastCheck: "27.04.2026 16:20" },
       { name: "session2", label: "Аккаунт 2", status: "Активен", reason: "Работает стабильно", lastCheck: "27.04.2026 16:18" },
+      { name: "admin_bot", label: "admin_bot", status: "Активен", reason: "Сессия учтена как отдельный аккаунт", lastCheck: "27.04.2026 16:17" },
     ],
     {
       first: "Привет, есть нормальные подрядчики по клинингу? А то попадаются одни распиздяи\nМне главное, чтобы на совесть делали и стандарты соблюдали",
@@ -515,7 +516,7 @@ export default function BotAnalyticsDashboard() {
             <div>
               <p className="text-sm font-semibold uppercase tracking-widest text-slate-400">Bot analytics</p>
               <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Мультипроектная панель Telegram-бота</h1>
-              <p className="mt-2 max-w-2xl text-slate-500">Один бот, внутри которого сейчас оставляем одну рабочую папку. Пока одна папка работает, запускать вторую нельзя.</p>
+              <p className="mt-2 max-w-2xl text-slate-500">Один бот, внутри которого сейчас оставляем одну рабочую папку. Сейчас в учёте 3 аккаунта: session1, session2 и admin_bot.</p>
             </div>
           </div>
 
