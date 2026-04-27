@@ -1,35 +1,5 @@
 import React, { useMemo, useState } from "react";
 
-const stats = [
-  { label: "Сообщений отправлено", value: "128 430", delta: "+12.8%", hint: "за последние 7 дней", icon: "✉️" },
-  { label: "Живых аккаунтов", value: "248", delta: "+18", hint: "активны и доступны", icon: "🛡️" },
-  { label: "Проектов в работе", value: "8", delta: "+2", hint: "можно держать 5–20 проектов", icon: "📁" },
-  { label: "Успешность доставки", value: "97.3%", delta: "+1.1%", hint: "без ошибок отправки", icon: "✅" },
-];
-
-const deliveryData = [
-  { day: "Пн", messages: 14200, delivered: 13840 },
-  { day: "Вт", messages: 16800, delivered: 16210 },
-  { day: "Ср", messages: 15450, delivered: 14920 },
-  { day: "Чт", messages: 18730, delivered: 18250 },
-  { day: "Пт", messages: 21900, delivered: 21360 },
-  { day: "Сб", messages: 17650, delivered: 17110 },
-  { day: "Вс", messages: 23700, delivered: 23090 },
-];
-
-const projectStatuses = [
-  { name: "Активные проекты", value: 8 },
-  { name: "На паузе", value: 3 },
-  { name: "Новые", value: 2 },
-  { name: "Архив", value: 1 },
-];
-
-const accountGroups = [
-  { label: "Активные", value: 248, percent: 82, icon: "✅", hint: "можно использовать в рассылке" },
-  { label: "На прогреве", value: 31, percent: 10, icon: "⏱️", hint: "ещё не в полном рабочем режиме" },
-  { label: "Лимит", value: 18, percent: 6, icon: "⚡", hint: "есть ограничения / flood" },
-  { label: "Заблокированы", value: 7, percent: 2, icon: "⛔", hint: "выпали из работы" },
-];
 
 const projectSections = [
   { id: "accounts", title: "Аккаунты", icon: "👤", description: "Аккаунты этого проекта." },
@@ -136,60 +106,20 @@ function StatCard({ item }) {
   );
 }
 
-function DeliveryChart() {
-  const width = 720;
-  const height = 300;
-  const padding = { top: 24, right: 24, bottom: 42, left: 54 };
-  const messages = buildAreaPath(deliveryData, "messages", width, height, padding);
-  const delivered = buildAreaPath(deliveryData, "delivered", width, height, padding);
-
-  return (
-    <div className="mt-6 overflow-hidden rounded-3xl bg-slate-50 p-3">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-80 w-full">
-        <defs>
-          <linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#0f172a" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#0f172a" stopOpacity="0.02" />
-          </linearGradient>
-        </defs>
-
-        {[0, 1, 2, 3, 4].map((line) => {
-          const y = padding.top + (line / 4) * (height - padding.top - padding.bottom);
-          return <line key={line} x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="#e2e8f0" strokeDasharray="5 7" />;
-        })}
-
-        <path d={messages.areaPath} fill="url(#areaFill)" />
-        <path d={messages.linePath} fill="none" stroke="#0f172a" strokeWidth="4" strokeLinecap="round" />
-        <path d={delivered.linePath} fill="none" stroke="#64748b" strokeWidth="3" strokeLinecap="round" />
-
-        {messages.points.map(([x, y], index) => (
-          <g key={deliveryData[index].day}>
-            <circle cx={x} cy={y} r="5" fill="#0f172a" />
-            <text x={x} y={height - 14} textAnchor="middle" className="fill-slate-500 text-xs font-semibold">
-              {deliveryData[index].day}
-            </text>
-          </g>
-        ))}
-
-        <text x={padding.left} y="18" className="fill-slate-500 text-xs font-semibold">
-          до {formatNumber(messages.max)} сообщений
-        </text>
-      </svg>
-    </div>
-  );
-}
-
-function ProjectStatusChart() {
-  const max = Math.max(...projectStatuses.map((item) => item.value));
+function SummaryBars({ items }) {
+  const max = Math.max(...items.map((item) => item.value), 1);
 
   return (
     <div className="mt-6 space-y-4">
-      {projectStatuses.map((item) => {
-        const width = Math.max((item.value / max) * 100, 8);
+      {items.map((item) => {
+        const width = Math.max((item.value / max) * 100, item.value > 0 ? 8 : 0);
         return (
           <div key={item.name} className="rounded-2xl bg-slate-50 p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="font-semibold text-slate-700">{item.name}</p>
+              <div>
+                <p className="font-semibold text-slate-700">{item.name}</p>
+                {item.hint ? <p className="text-sm text-slate-500">{item.hint}</p> : null}
+              </div>
               <p className="text-lg font-bold text-slate-950">{formatNumber(item.value)}</p>
             </div>
             <div className="h-3 overflow-hidden rounded-full bg-slate-200">
@@ -490,6 +420,62 @@ export default function BotAnalyticsDashboard() {
 
   const activeProject = useMemo(() => projects.find((project) => project.id === activeProjectId) || projects[0], [projects, activeProjectId]);
 
+  const allAccounts = useMemo(() => projects.flatMap((project) => project.accounts), [projects]);
+  const totalChats = useMemo(() => projects.reduce((sum, project) => sum + project.chats.length, 0), [projects]);
+  const activeAccounts = useMemo(() => allAccounts.filter((account) => account.status === "Активен").length, [allAccounts]);
+  const accountsNeedingAttention = useMemo(() => allAccounts.filter((account) => ["Лимит", "Заблокирован", "Требует вход", "Ошибка"].includes(account.status)).length, [allAccounts]);
+
+  const stats = useMemo(() => [
+    { label: "Проектов", value: formatNumber(projects.length), delta: `${projects.length} шт.`, hint: "папки внутри одного бота", icon: "📁" },
+    { label: "Аккаунтов всего", value: formatNumber(allAccounts.length), delta: `${activeAccounts} активных`, hint: "во всех проектах", icon: "👤" },
+    { label: "Активных аккаунтов", value: formatNumber(activeAccounts), delta: `${accountsNeedingAttention} требуют внимания`, hint: "готовы к работе", icon: "🛡️" },
+    { label: "Чатов всего", value: formatNumber(totalChats), delta: `${projects.length ? Math.round(totalChats / projects.length) : 0} в среднем`, hint: "во всех проектах", icon: "💬" },
+  ], [projects, allAccounts.length, activeAccounts, accountsNeedingAttention, totalChats]);
+
+  const accountGroups = useMemo(() => {
+    const statuses = [
+      { key: "Активен", label: "Активные", icon: "✅", hint: "можно использовать в рассылке" },
+      { key: "Прогрев", label: "На прогреве", icon: "⏱️", hint: "ещё не в полном рабочем режиме" },
+      { key: "Лимит", label: "Лимит", icon: "⚡", hint: "есть ограничения / flood" },
+      { key: "Заблокирован", label: "Заблокированы", icon: "⛔", hint: "выпали из работы" },
+      { key: "Требует вход", label: "Требуют вход", icon: "🔐", hint: "нужен новый вход" },
+      { key: "Ошибка", label: "Ошибка", icon: "⚙️", hint: "неясная техническая проблема" },
+    ];
+    const total = Math.max(allAccounts.length, 1);
+    return statuses.map((status) => {
+      const value = allAccounts.filter((account) => account.status === status.key).length;
+      return { ...status, value, percent: Math.round((value / total) * 100) };
+    }).filter((item) => item.value > 0);
+  }, [allAccounts]);
+
+  const projectStatusItems = useMemo(() => {
+    const counts = { active: 0, warmup: 0, setup: 0, problem: 0 };
+    projects.forEach((project) => {
+      const statuses = project.accounts.map((account) => account.status);
+      const hasActive = statuses.includes("Активен");
+      const hasOnlyWarmup = statuses.length > 0 && statuses.every((status) => status === "Прогрев");
+      const allProblem = statuses.length > 0 && statuses.every((status) => ["Лимит", "Заблокирован", "Требует вход", "Ошибка"].includes(status));
+      if (!project.chats.length || !project.accounts.length) counts.setup += 1;
+      else if (allProblem) counts.problem += 1;
+      else if (hasActive && project.chats.length > 0) counts.active += 1;
+      else if (hasOnlyWarmup) counts.warmup += 1;
+      else counts.problem += 1;
+    });
+    return [
+      { name: "Активные проекты", value: counts.active, hint: "есть активный аккаунт и чаты" },
+      { name: "На прогреве", value: counts.warmup, hint: "аккаунты ещё не выведены в работу" },
+      { name: "Не настроены", value: counts.setup, hint: "не хватает аккаунтов или чатов" },
+      { name: "Проблемные", value: counts.problem, hint: "нужна ручная проверка" },
+    ];
+  }, [projects]);
+
+  const projectSummaryItems = useMemo(() => [
+    { name: "Чатов всего", value: totalChats, hint: "суммарно по всем проектам" },
+    { name: "Чатов в среднем на проект", value: projects.length ? Math.round(totalChats / projects.length) : 0, hint: "средняя нагрузка на проект" },
+    { name: "Аккаунтов всего", value: allAccounts.length, hint: "все статусы вместе" },
+    { name: "Активных аккаунтов", value: activeAccounts, hint: "готовы к работе прямо сейчас" },
+  ], [projects.length, totalChats, allAccounts.length, activeAccounts]);
+
   const addProject = () => {
     const name = newProjectName.trim();
     if (!name) return;
@@ -557,16 +543,16 @@ export default function BotAnalyticsDashboard() {
         <main className="mt-6 space-y-6">
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{stats.map((item) => <StatCard key={item.label} item={item} />)}</section>
 
-          <section className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+          <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="flex items-center gap-2 text-slate-500"><span>📈</span><p className="text-sm font-semibold uppercase tracking-widest">Динамика</p></div>
-                  <h2 className="mt-2 text-2xl font-bold">Отправки и доставки</h2>
+                  <div className="flex items-center gap-2 text-slate-500"><span>📊</span><p className="text-sm font-semibold uppercase tracking-widest">Основа</p></div>
+                  <h2 className="mt-2 text-2xl font-bold">Сводка по структуре бота</h2>
                 </div>
                 <p className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600">Период: {period}</p>
               </div>
-              <DeliveryChart />
+              <SummaryBars items={projectSummaryItems} />
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -577,7 +563,7 @@ export default function BotAnalyticsDashboard() {
                 </div>
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-2xl">📁</div>
               </div>
-              <ProjectStatusChart />
+              <SummaryBars items={projectStatusItems} />
             </div>
           </section>
 
