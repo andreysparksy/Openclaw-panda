@@ -476,6 +476,20 @@ export default function BotAnalyticsDashboard() {
     { name: "Активных аккаунтов", value: activeAccounts, hint: "готовы к работе прямо сейчас" },
   ], [projects.length, totalChats, allAccounts.length, activeAccounts]);
 
+  const activeProjectStats = useMemo(() => {
+    if (!activeProject) return null;
+    const projectAccounts = activeProject.accounts;
+    const activeCount = projectAccounts.filter((account) => account.status === "Активен").length;
+    const problemCount = projectAccounts.filter((account) => ["Лимит", "Заблокирован", "Требует вход", "Ошибка"].includes(account.status)).length;
+    return {
+      chats: activeProject.chats.length,
+      accounts: projectAccounts.length,
+      activeCount,
+      problemCount,
+      messagesCount: [activeProject.messages.first, activeProject.messages.second, activeProject.messages.third].filter(Boolean).length,
+    };
+  }, [activeProject]);
+
   const addProject = () => {
     const name = newProjectName.trim();
     if (!name) return;
@@ -630,6 +644,17 @@ export default function BotAnalyticsDashboard() {
                       <h2 className="mt-2 text-2xl font-bold">{activeProject.name}</h2>
                       <p className="mt-2 text-sm text-slate-500">Внутри каждой папки свой набор аккаунтов, сообщений и чатов.</p>
                     </div>
+
+                    {activeProjectStats && (
+                      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                        <div className="rounded-2xl bg-slate-50 p-4"><div className="text-sm text-slate-500">Аккаунтов</div><div className="mt-2 text-2xl font-bold text-slate-950">{formatNumber(activeProjectStats.accounts)}</div></div>
+                        <div className="rounded-2xl bg-slate-50 p-4"><div className="text-sm text-slate-500">Активных</div><div className="mt-2 text-2xl font-bold text-slate-950">{formatNumber(activeProjectStats.activeCount)}</div></div>
+                        <div className="rounded-2xl bg-slate-50 p-4"><div className="text-sm text-slate-500">Проблемных</div><div className="mt-2 text-2xl font-bold text-slate-950">{formatNumber(activeProjectStats.problemCount)}</div></div>
+                        <div className="rounded-2xl bg-slate-50 p-4"><div className="text-sm text-slate-500">Чатов</div><div className="mt-2 text-2xl font-bold text-slate-950">{formatNumber(activeProjectStats.chats)}</div></div>
+                        <div className="rounded-2xl bg-slate-50 p-4"><div className="text-sm text-slate-500">Сообщений</div><div className="mt-2 text-2xl font-bold text-slate-950">{formatNumber(activeProjectStats.messagesCount)}</div></div>
+                      </div>
+                    )}
+
                     <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                       {projectSections.map((section) => (
                         <SectionCard key={section.id} section={section} isActive={activeSection === section.id} onClick={setActiveSection} />
