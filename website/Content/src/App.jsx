@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 const platforms = ["Telegram", "VK"];
 const workflowStatuses = ["Идея", "Черновик", "Чистовик"];
@@ -73,20 +73,67 @@ ${item.angle}
   };
 }
 
+const STORAGE_KEY = "content-studio-v1";
+
+function serializeItems(items) {
+  return items.map((item) => ({ ...item, date: item.date instanceof Date ? item.date.toISOString() : item.date }));
+}
+
+function deserializeItems(items = []) {
+  return items.map((item) => ({ ...item, date: item.date ? new Date(item.date) : new Date() }));
+}
+
 export default function App() {
   const [weekStart, setWeekStart] = useState(() => {
+    const saved = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.weekStart) return new Date(parsed.weekStart);
+      } catch {}
+    }
     const now = new Date();
     const day = now.getDay() || 7;
     const monday = new Date(now);
     monday.setDate(now.getDate() - day + 1);
     return monday;
   });
-  const [items, setItems] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
+  const [items, setItems] = useState(() => {
+    const saved = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved);
+      return deserializeItems(parsed.items || []);
+    } catch {
+      return [];
+    }
+  });
+  const [selectedId, setSelectedId] = useState(() => {
+    const saved = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+    if (!saved) return null;
+    try {
+      const parsed = JSON.parse(saved);
+      return parsed.selectedId || null;
+    } catch {
+      return null;
+    }
+  });
   const [activity, setActivity] = useState("Готова к работе");
   const [working, setWorking] = useState(false);
   const [toneFileName, setToneFileName] = useState("");
   const [tonePreview, setTonePreview] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        weekStart: weekStart.toISOString(),
+        selectedId,
+        items: serializeItems(items),
+      })
+    );
+  }, [weekStart, selectedId, items]);
 
   const week = useMemo(() => getWeek(weekStart), [weekStart]);
   const scheduledItems = useMemo(() => items.filter((item) => item.hasDeadline), [items]);
@@ -113,7 +160,7 @@ export default function App() {
     setTimeout(() => {
       const deadlineDate = weeklyItems.length < 3 ? week[Math.min(weeklyItems.length * 3, 6)] : null;
       const seed = seedIdeas[items.length % seedIdeas.length];
-      const nextItem = {
+      const baseItem = {
         id: `${Date.now()}-${items.length}`,
         date: deadlineDate || new Date(weekStart),
         dayName: deadlineDate ? dayNames[week.findIndex((date) => date.toDateString() === deadlineDate.toDateString())] : "Без дедлайна",
@@ -122,8 +169,11 @@ export default function App() {
         platforms: seed[2].filter((platform) => platforms.includes(platform)).concat(["VK"]).filter((value, index, arr) => arr.indexOf(value) === index),
         status: "Идея",
         hasDeadline: false,
-        draft: null,
         published: {},
+      };
+      const nextItem = {
+        ...baseItem,
+        draft: makeDraft(baseItem, toneFileName || tonePreview),
       };
       if (nextItem.status === "Идея") {
         nextItem.hasDeadline = false;
@@ -139,9 +189,12 @@ export default function App() {
   function createDraft() {
     if (!selected) return;
     setActivity("Генерирую тексты, промпты и структуру карусели…");
+    const existingNotes = selected.draft?.notes || "";
     patchSelected({ status: "Генерация" });
     setTimeout(() => {
-      patchSelected({ status: "Черновик", draft: makeDraft(selected, toneFileName || tonePreview) });
+      const nextDraft = makeDraft(selected, toneFileName || tonePreview);
+      nextDraft.notes = existingNotes;
+      patchSelected({ status: "Черновик", draft: nextDraft });
       setActivity("Черновик готов");
     }, 700);
   }
