@@ -88,7 +88,11 @@ export default function App() {
   const [tonePreview, setTonePreview] = useState("");
 
   const week = useMemo(() => getWeek(weekStart), [weekStart]);
+  const scheduledItems = useMemo(() => items.filter((item) => item.hasDeadline), [items]);
+  const backlogItems = useMemo(() => items.filter((item) => !item.hasDeadline), [items]);
   const selected = items.find((x) => x.id === selectedId) || items[0];
+  const weeklyItems = useMemo(() => scheduledItems.filter((item) => week.some((date) => date.toDateString() === item.date.toDateString())), [scheduledItems, week]);
+  const weeklyGap = Math.max(0, 3 - weeklyItems.length);
 
   function patchSelected(patch) {
     if (!selected) return;
@@ -100,29 +104,35 @@ export default function App() {
     next.setDate(next.getDate() + delta * 7);
     setWeekStart(next);
     setSelectedId(null);
-    setItems([]);
   }
 
-  function generatePlan() {
+  function addContent() {
     setWorking(true);
-    setActivity("Вики анализирует память, проекты и прошлый контент…");
+    setActivity("Вики подготавливает новую единицу контента…");
     setTimeout(() => {
-      const next = week.map((date, i) => ({
-        id: `${date.getTime()}-${i}`,
-        date,
-        dayName: dayNames[i],
-        idea: seedIdeas[i][0],
-        angle: seedIdeas[i][1],
-        platforms: seedIdeas[i][2].filter((platform) => platforms.includes(platform)).concat(i % 2 === 0 ? ["VK"] : []).filter((value, index, arr) => arr.indexOf(value) === index),
+      const deadlineDate = weeklyItems.length < 3 ? week[Math.min(weeklyItems.length * 3, 6)] : null;
+      const seed = seedIdeas[items.length % seedIdeas.length];
+      const nextItem = {
+        id: `${Date.now()}-${items.length}`,
+        date: deadlineDate || new Date(weekStart),
+        dayName: deadlineDate ? dayNames[week.findIndex((date) => date.toDateString() === deadlineDate.toDateString())] : "Без дедлайна",
+        idea: seed[0],
+        angle: seed[1],
+        platforms: seed[2].filter((platform) => platforms.includes(platform)).concat(["VK"]).filter((value, index, arr) => arr.indexOf(value) === index),
         status: "Идея",
+        hasDeadline: false,
         draft: null,
         published: {},
-      }));
-      setItems(next);
-      setSelectedId(next[0].id);
+      };
+      if (nextItem.status === "Идея") {
+        nextItem.hasDeadline = false;
+        nextItem.dayName = "Без дедлайна";
+      }
+      setItems((prev) => [nextItem, ...prev]);
+      setSelectedId(nextItem.id);
       setWorking(false);
-      setActivity("План на неделю готов");
-    }, 700);
+      setActivity("Контент добавлен в наброски");
+    }, 500);
   }
 
   function createDraft() {
@@ -167,7 +177,17 @@ export default function App() {
 
   function setStatus(status) {
     if (!selected) return;
-    patchSelected({ status });
+    const patch = { status };
+    if (status === "Идея") {
+      patch.hasDeadline = false;
+      patch.dayName = "Без дедлайна";
+    } else if (!selected.hasDeadline) {
+      const targetDate = weeklyItems.length < 3 ? week[Math.min(weeklyItems.length * 3, 6)] : week[0];
+      patch.hasDeadline = true;
+      patch.date = targetDate;
+      patch.dayName = dayNames[week.findIndex((date) => date.toDateString() === targetDate.toDateString())] || dayNames[0];
+    }
+    patchSelected(patch);
     setActivity(`Статус обновлён: ${status}`);
   }
 
@@ -213,22 +233,23 @@ export default function App() {
           <div>
             <div className="text-sm text-slate-500">Неделя контента</div>
             <div className="text-lg font-semibold">{formatDate(week[0])} — {formatDate(week[6])}</div>
+            {weeklyGap > 0 && <div className="mt-2 text-sm text-amber-600">⚠️ На этой неделе не хватает {weeklyGap} единиц контента. По плану контент должен выходить раз в 3 дня.</div>}
           </div>
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => shiftWeek(-1)}>← Прошлая</Button>
             <Button onClick={() => shiftWeek(1)}>Следующая →</Button>
-            <Button active onClick={generatePlan} disabled={working}>✨ Предложить план к Вики</Button>
+            <Button active onClick={addContent} disabled={working}>＋ Добавить контент</Button>
           </div>
         </section>
 
-        <main className="grid gap-6 lg:grid-cols-[0.9fr_1.5fr]">
+        <main className="grid gap-6 lg:grid-cols-[0.9fr_1.5fr_0.9fr]">
           <aside className="space-y-3">
-            {items.length === 0 && (
+            {scheduledItems.length === 0 && (
               <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
-                Нажмите «Предложить план к Вики».
+                Добавь контент и переведи его в черновик или чистовик, чтобы поставить на неделю.
               </div>
             )}
-            {items.map((item) => (
+            {scheduledItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setSelectedId(item.id)}
@@ -347,6 +368,37 @@ export default function App() {
               </div>
             )}
           </section>
+
+          <aside className="space-y-3">
+            <div className="rounded-3xl bg-white p-5 shadow-sm">
+              <div className="text-sm text-slate-500">Справа</div>
+              <div className="mt-1 text-xl font-bold">Наброски контента</div>
+              <div className="mt-2 text-sm text-slate-500">Здесь лежит контент без дедлайна. Если статус — идея, он автоматически падает сюда.</div>
+            </div>
+            {backlogItems.length === 0 && (
+              <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
+                Пока пусто. Новые идеи без дедлайна будут появляться здесь.
+              </div>
+            )}
+            {backlogItems.map((item) => (
+              <button
+                key={`backlog-${item.id}`}
+                onClick={() => setSelectedId(item.id)}
+                className={`w-full rounded-3xl border p-4 text-left shadow-sm ${selected && selected.id === item.id ? "border-slate-900 bg-slate-100" : "border-slate-200 bg-white"}`}
+              >
+                <div className="flex justify-between gap-3">
+                  <div>
+                    <div className="text-sm text-slate-500">Без дедлайна</div>
+                    <div className="mt-1 font-semibold">{item.idea}</div>
+                  </div>
+                  <span className="h-fit rounded-full bg-white px-3 py-1 text-xs">{item.status}</span>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {item.platforms.map((p) => <span key={p} className="rounded-full bg-slate-200 px-2 py-1 text-xs">{p}</span>)}
+                </div>
+              </button>
+            ))}
+          </aside>
         </main>
       </div>
     </div>
