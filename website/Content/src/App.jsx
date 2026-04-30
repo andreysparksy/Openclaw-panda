@@ -44,6 +44,7 @@ function Button({ children, onClick, active, disabled }) {
 
 function makeDraft(item, toneSource) {
   return {
+    notes: "",
     telegram: `🔥 ${item.idea}
 
 Сегодня разбираю: ${item.angle.toLowerCase()}.
@@ -159,6 +160,25 @@ export default function App() {
     draft.telegram += "\n\nP.S. Это не магия, а нормально собранный процесс ✨";
     patchSelected({ draft });
     setActivity("Telegram-пост переписан в более личном стиле");
+  }
+
+  function updateNotes(value) {
+    if (!selected || !selected.draft) return;
+    patchSelected({ draft: { ...selected.draft, notes: value } });
+  }
+
+  function generateFromNotes() {
+    if (!selected || !selected.draft) return;
+    const notes = selected.draft.notes?.trim();
+    if (!notes) {
+      setActivity("Сначала добавь заметки для поста");
+      return;
+    }
+    const draft = { ...selected.draft };
+    draft.telegram = `🔥 ${selected.idea}\n\nНа основе заметок:\n${notes}\n\nГлавная мысль: ${selected.angle}.\n\nТон-источник: ${toneFileName || tonePreview || "не загружен"}.\n\nЕсли нужен такой же разбор под ваш бизнес — напишите «ВИКИ».`;
+    draft.vk = `Пост для VK: ${selected.idea}\n\nЗаметки:\n${notes}\n\nВывод: ${selected.angle}.\n\nЕсли хотите такую же систему контента — напишите в сообщения.`;
+    patchSelected({ draft, status: "Черновик" });
+    setActivity("Пост сгенерирован на основе заметок");
   }
 
   function uploadToneFile(event) {
@@ -331,8 +351,27 @@ export default function App() {
                             <Button active onClick={() => publish("Telegram")}>{selected.published.Telegram ? "✅ Опубликовано" : "🚀 Опубликовать"}</Button>
                           </div>
                         </div>
+                        <div className="mb-4 space-y-3 rounded-2xl bg-slate-50 p-4">
+                          <div className="font-semibold text-slate-800">Рабочая область</div>
+                          <textarea
+                            value={selected.draft.notes || ""}
+                            onChange={(e) => updateNotes(e.target.value)}
+                            placeholder="Сюда вноси заметки, тезисы, факты, кейсы, мысли и куски исходников."
+                            className="min-h-[160px] w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm outline-none"
+                          />
+                          <div className="flex flex-wrap gap-2">
+                            <Button active onClick={generateFromNotes}>✨ Сгенерировать</Button>
+                          </div>
+                        </div>
                         {selected.draft.bannerReady && <div className="mb-4 rounded-2xl bg-gradient-to-r from-slate-800 to-slate-500 p-8 text-center text-xl font-bold text-white">Баннер: {selected.idea}</div>}
-                        <pre className="whitespace-pre-wrap rounded-2xl bg-slate-100 p-4 font-sans text-sm">{selected.draft.telegram}</pre>
+                        <div>
+                          <div className="mb-2 font-semibold text-slate-800">Готовый пост</div>
+                          <textarea
+                            value={selected.draft.telegram}
+                            onChange={(e) => patchSelected({ draft: { ...selected.draft, telegram: e.target.value } })}
+                            className="min-h-[240px] w-full rounded-2xl bg-slate-100 p-4 font-sans text-sm outline-none"
+                          />
+                        </div>
                       </div>
                     )}
 
