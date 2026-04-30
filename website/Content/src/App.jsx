@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 
-const platforms = ["Telegram", "Threads", "Instagram"];
+const platforms = ["Telegram", "VK"];
+const workflowStatuses = ["Идея", "Черновик", "Чистовик"];
 const dayNames = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"];
 
 const seedIdeas = [
@@ -41,7 +42,7 @@ function Button({ children, onClick, active, disabled }) {
   );
 }
 
-function makeDraft(item) {
+function makeDraft(item, toneSource) {
   return {
     telegram: `🔥 ${item.idea}
 
@@ -51,23 +52,22 @@ function makeDraft(item) {
 
 Формула: память → план → драфт → визуал → публикация → воронка.
 
-Напишите «ВИКИ», если хотите такую же механику под свой бизнес.`,
-    threads: [
-      `1/3 ${item.idea}. Большинство думает, что проблема в нехватке идей. На самом деле проблема в отсутствии процесса.`,
-      "2/3 Когда ИИ знает ваши проекты, стиль и цели, он собирает контент под задачу, а не просто пишет текст.",
-      "3/3 Правильная система экономит часы: план, драфты, визуалы и публикация собираются в одном месте.",
-    ],
-    instagramCaption: `${item.idea}
+Тон-источник: ${toneSource || "не загружен"}.
 
-Сохраняйте карусель. Кодовое слово: ВИКИ.`,
+Напишите «ВИКИ», если хотите такую же механику под свой бизнес.`,
+    vk: `Пост для VK: ${item.idea}
+
+${item.angle}
+
+Здесь будет адаптация под более развёрнутый формат, ссылки, CTA и комментарии.`,
     bannerReady: false,
-    carousel: Array.from({ length: 6 }, (_, i) => ({
+    carousel: Array.from({ length: 4 }, (_, i) => ({
       title:
         i === 0
           ? item.idea
-          : ["Память о проектах", "Идеи на каждый день", "Драфты под площадки", "Баннеры и карусели", "Публикация и воронка"][i - 1],
+          : ["Контекст", "Система", "Пример", "Призыв к действию"][i - 1],
       ready: false,
-      prompt: `Слайд ${i + 1}: карусель Instagram на тему «${item.idea}», чистый экспертный стиль`,
+      prompt: `Слайд ${i + 1}: визуал на тему «${item.idea}», чистый экспертный стиль`,
     })),
   };
 }
@@ -84,6 +84,8 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [activity, setActivity] = useState("Готова к работе");
   const [working, setWorking] = useState(false);
+  const [toneFileName, setToneFileName] = useState("");
+  const [tonePreview, setTonePreview] = useState("");
 
   const week = useMemo(() => getWeek(weekStart), [weekStart]);
   const selected = items.find((x) => x.id === selectedId) || items[0];
@@ -111,7 +113,7 @@ export default function App() {
         dayName: dayNames[i],
         idea: seedIdeas[i][0],
         angle: seedIdeas[i][1],
-        platforms: seedIdeas[i][2],
+        platforms: seedIdeas[i][2].filter((platform) => platforms.includes(platform)).concat(i % 2 === 0 ? ["VK"] : []).filter((value, index, arr) => arr.indexOf(value) === index),
         status: "Идея",
         draft: null,
         published: {},
@@ -128,8 +130,8 @@ export default function App() {
     setActivity("Генерирую тексты, промпты и структуру карусели…");
     patchSelected({ status: "Генерация" });
     setTimeout(() => {
-      patchSelected({ status: "Драфт готов", draft: makeDraft(selected) });
-      setActivity("Черновики готовы");
+      patchSelected({ status: "Черновик", draft: makeDraft(selected, toneFileName || tonePreview) });
+      setActivity("Черновик готов");
     }, 700);
   }
 
@@ -147,6 +149,26 @@ export default function App() {
     draft.telegram += "\n\nP.S. Это не магия, а нормально собранный процесс ✨";
     patchSelected({ draft });
     setActivity("Telegram-пост переписан в более личном стиле");
+  }
+
+  function uploadToneFile(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setToneFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const raw = String(reader.result || "");
+      const cleaned = raw.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      setTonePreview(cleaned.slice(0, 400));
+      setActivity(`Тон оф войс считан из ${file.name}`);
+    };
+    reader.readAsText(file, "utf-8");
+  }
+
+  function setStatus(status) {
+    if (!selected) return;
+    patchSelected({ status });
+    setActivity(`Статус обновлён: ${status}`);
   }
 
   function generateBanner() {
@@ -259,8 +281,21 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-slate-100 p-4 text-sm text-slate-600">
-                  Источники агента: память проекта, предыдущий контент-план, новости рынка, заметки эксперта.
+                <div>
+                  <div className="mb-2 font-semibold">Метка этапа</div>
+                  <div className="flex flex-wrap gap-2">
+                    {workflowStatuses.map((status) => <Button key={status} active={selected.status === status} onClick={() => setStatus(status)}>{status}</Button>)}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-slate-100 p-4 text-sm text-slate-600 space-y-3">
+                  <div>Источники агента: память проекта, предыдущий контент-план, новости рынка, заметки эксперта.</div>
+                  <div>
+                    <div className="mb-2 font-semibold text-slate-800">HTML-файл для tone of voice</div>
+                    <input type="file" accept=".html,.htm,text/html" onChange={uploadToneFile} className="block w-full text-sm" />
+                    {toneFileName && <div className="mt-2 text-xs text-slate-500">Загружен файл: {toneFileName}</div>}
+                    {tonePreview && <div className="mt-2 rounded-xl bg-white p-3 text-xs text-slate-600">Превью tone of voice: {tonePreview}</div>}
+                  </div>
                 </div>
 
                 {selected.draft && (
@@ -280,34 +315,22 @@ export default function App() {
                       </div>
                     )}
 
-                    {selected.platforms.includes("Threads") && (
+                    {selected.platforms.includes("VK") && (
                       <div className="rounded-3xl border border-slate-200 p-4">
                         <div className="mb-3 flex items-center justify-between gap-2">
-                          <h2 className="text-xl font-bold">Threads</h2>
-                          <Button active onClick={() => publish("Threads")}>{selected.published.Threads ? "✅ Опубликовано" : "🚀 Опубликовать ветку"}</Button>
+                          <h2 className="text-xl font-bold">VK</h2>
+                          <Button active onClick={() => publish("VK")}>{selected.published.VK ? "✅ Опубликовано" : "🚀 Опубликовать"}</Button>
                         </div>
-                        <div className="space-y-2">
-                          {selected.draft.threads.map((post, i) => <div key={i} className="rounded-2xl bg-slate-100 p-3 text-sm">{post}</div>)}
-                        </div>
-                      </div>
-                    )}
-
-                    {selected.platforms.includes("Instagram") && (
-                      <div className="rounded-3xl border border-slate-200 p-4">
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                          <h2 className="text-xl font-bold">Instagram-карусель</h2>
-                          <Button active onClick={() => publish("Instagram")}>{selected.published.Instagram ? "✅ Опубликовано" : "🚀 Опубликовать"}</Button>
-                        </div>
-                        <div className="mb-4 rounded-2xl bg-slate-100 p-3 text-sm">{selected.draft.instagramCaption}</div>
+                        <div className="mb-4 rounded-2xl bg-slate-100 p-3 text-sm whitespace-pre-wrap">{selected.draft.vk}</div>
                         <div className="grid gap-3 md:grid-cols-2">
                           {selected.draft.carousel.map((slide, i) => (
                             <div key={i} className="rounded-2xl border border-slate-200 p-3">
                               <div className="mb-2 flex items-center justify-between gap-2">
-                                <div className="font-semibold">Слайд {i + 1}</div>
+                                <div className="font-semibold">Визуал {i + 1}</div>
                                 <Button onClick={() => generateSlide(i)}>{slide.ready ? "✅ Готов" : "Сгенерировать"}</Button>
                               </div>
                               <div className={`mb-3 flex h-32 items-center justify-center rounded-xl p-4 text-center text-sm ${slide.ready ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-500"}`}>
-                                {slide.ready ? slide.title : "Изображение пока не создано"}
+                                {slide.ready ? slide.title : "Визуал пока не создан"}
                               </div>
                               <div className="text-xs text-slate-500">{slide.prompt}</div>
                             </div>
@@ -319,7 +342,7 @@ export default function App() {
                 )}
 
                 <div className="rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-600">
-                  🔌 Production-подключения: LLM API, генератор изображений, база памяти, Telegram Bot API, Meta/Instagram API, Threads API и хранилище файлов.
+                  🔌 Production-подключения: LLM API, генератор изображений, база памяти, Telegram Bot API, VK API, хранилище файлов и агент, который читает HTML-файл, вытаскивает tone of voice и подмешивает его в генерацию.
                 </div>
               </div>
             )}
