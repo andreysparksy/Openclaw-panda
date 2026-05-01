@@ -14,6 +14,9 @@ const initialWishes = [
   { id: 2, text: "Новый ноутбук", done: false },
 ];
 
+const blankIncome = Array(12).fill(0);
+const blankWishes = [];
+
 const initialProjects = [
   {
     id: 1,
@@ -175,6 +178,38 @@ function clearExpiredGoals(project) {
   };
 }
 
+function getDefaultStateForLogin(login) {
+  if (login === "Volhova") {
+    return {
+      tab: "projects",
+      income: blankIncome,
+      projects: [
+        clearExpiredGoals({
+          id: 1,
+          name: "Проект 1",
+          yearly: "",
+          quarterly: "",
+          monthly: "",
+          weekly: "",
+          tasks: [],
+        }),
+      ],
+      newTasks: {},
+      wishes: blankWishes,
+      newWish: "",
+    };
+  }
+
+  return {
+    tab: "projects",
+    income: initialIncome,
+    projects: initialProjects.map(clearExpiredGoals),
+    newTasks: {},
+    wishes: initialWishes,
+    newWish: "",
+  };
+}
+
 export default function LifeAnalyticsDashboard() {
   const [loginInput, setLoginInput] = useState("");
   const [activeLogin, setActiveLogin] = useState(() => {
@@ -182,24 +217,26 @@ export default function LifeAnalyticsDashboard() {
     return window.localStorage.getItem("myhome-active-login") || "";
   });
   const saved = loadSavedState(activeLogin);
-  const [tab, setTab] = useState(saved?.tab || "projects");
-  const [income, setIncome] = useState(saved?.income || initialIncome);
-  const [projects, setProjects] = useState((saved?.projects || initialProjects).map(clearExpiredGoals));
-  const [newTasks, setNewTasks] = useState(saved?.newTasks || {});
+  const defaults = getDefaultStateForLogin(activeLogin);
+  const [tab, setTab] = useState(saved?.tab || defaults.tab);
+  const [income, setIncome] = useState(saved?.income || defaults.income);
+  const [projects, setProjects] = useState((saved?.projects || defaults.projects).map(clearExpiredGoals));
+  const [newTasks, setNewTasks] = useState(saved?.newTasks || defaults.newTasks);
   const [sheetStatus, setSheetStatus] = useState("Финансы пока берутся локально");
-  const [wishes, setWishes] = useState(saved?.wishes || initialWishes);
-  const [newWish, setNewWish] = useState(saved?.newWish || "");
+  const [wishes, setWishes] = useState(saved?.wishes || defaults.wishes);
+  const [newWish, setNewWish] = useState(saved?.newWish || defaults.newWish);
 
   useEffect(() => {
     if (!activeLogin || typeof window === "undefined") return;
     window.localStorage.setItem("myhome-active-login", activeLogin);
     const nextSaved = loadSavedState(activeLogin);
-    setTab(nextSaved?.tab || "projects");
-    setIncome(nextSaved?.income || initialIncome);
-    setProjects((nextSaved?.projects || initialProjects).map(clearExpiredGoals));
-    setNewTasks(nextSaved?.newTasks || {});
-    setWishes(nextSaved?.wishes || initialWishes);
-    setNewWish(nextSaved?.newWish || "");
+    const nextDefaults = getDefaultStateForLogin(activeLogin);
+    setTab(nextSaved?.tab || nextDefaults.tab);
+    setIncome(nextSaved?.income || nextDefaults.income);
+    setProjects((nextSaved?.projects || nextDefaults.projects).map(clearExpiredGoals));
+    setNewTasks(nextSaved?.newTasks || nextDefaults.newTasks);
+    setWishes(nextSaved?.wishes || nextDefaults.wishes);
+    setNewWish(nextSaved?.newWish || nextDefaults.newWish);
   }, [activeLogin]);
 
   useEffect(() => {
