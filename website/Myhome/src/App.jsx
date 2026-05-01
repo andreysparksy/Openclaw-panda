@@ -5,6 +5,8 @@ const months = [
   "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
 ];
 
+const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxV_tBeOiwFCKFSP72HIeMGOnseVucFiWIP5LsX9ZV0PFk5ejHHZPCt7hKjtYEplaSVEQ/exec";
+
 const initialIncome = [35000, 73800, 94000, 22850, 0, 0, 0, 0, 0, 0, 0, 0];
 
 const initialProjects = [
@@ -169,6 +171,7 @@ export default function LifeAnalyticsDashboard() {
   const [income, setIncome] = useState(saved?.income || initialIncome);
   const [projects, setProjects] = useState((saved?.projects || initialProjects).map(clearExpiredGoals));
   const [newTasks, setNewTasks] = useState(saved?.newTasks || {});
+  const [sheetStatus, setSheetStatus] = useState("Финансы пока берутся локально");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -177,6 +180,27 @@ export default function LifeAnalyticsDashboard() {
       JSON.stringify({ tab, income, projects, newTasks })
     );
   }, [tab, income, projects, newTasks]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(SHEET_API_URL)
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled || !Array.isArray(data)) return;
+        const nextIncome = months.map((month) => {
+          const row = data.find((item) => String(item.month || "").trim().toLowerCase().startsWith(month.toLowerCase().slice(0, 3)));
+          return row ? Number(row.income) || 0 : 0;
+        });
+        setIncome(nextIncome);
+        setSheetStatus("Финансы синхронизированы из Google Sheets");
+      })
+      .catch(() => {
+        if (!cancelled) setSheetStatus("Не удалось загрузить данные из Google Sheets");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const currentMonthIndex = 4;
   const previousIncome = income[Math.max(0, currentMonthIndex - 1)] || 0;
@@ -359,6 +383,7 @@ export default function LifeAnalyticsDashboard() {
                     <h2 className="text-xl font-semibold">Личные финансы</h2>
                   </div>
 
+                  <div className="px-4 pt-4 text-sm text-slate-500">{sheetStatus}</div>
                   <div className="overflow-x-auto p-4">
                     <table className="w-full border-collapse text-sm">
                       <thead>
