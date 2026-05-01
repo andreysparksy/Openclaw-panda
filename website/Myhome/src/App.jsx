@@ -382,33 +382,58 @@ export default function LifeAnalyticsDashboard() {
 
             {tab === "calendar" && (
               <div className="space-y-5">
-                <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+                <section className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
                   <Card>
                     <div className="mb-4 flex items-center justify-between">
                       <div>
-                        <h2 className="text-2xl font-bold">Календарь недели</h2>
+                        <h2 className="text-2xl font-bold">Дневной календарь</h2>
                         <p className="text-sm text-slate-500">Основа под интеграцию с iCloud Calendar</p>
                       </div>
                       <Button onClick={addCalendarEvent}>＋ Добавить событие</Button>
                     </div>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      {calendarEvents.map((event) => (
-                        <div key={event.id} className="rounded-2xl border bg-slate-50 p-4">
-                          <input
-                            value={event.title}
-                            onChange={(e) => updateCalendarEvent(event.id, { title: e.target.value })}
-                            className="mb-2 w-full rounded-xl border bg-white p-3 font-semibold outline-none"
-                          />
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            <input type="date" value={event.date} onChange={(e) => updateCalendarEvent(event.id, { date: e.target.value })} className="rounded-xl border bg-white p-3 outline-none" />
-                            <input type="time" value={event.time} onChange={(e) => updateCalendarEvent(event.id, { time: e.target.value })} className="rounded-xl border bg-white p-3 outline-none" />
-                          </div>
-                          <div className="mt-3 flex items-center justify-between">
-                            <span className="rounded-full bg-white px-3 py-1 text-xs text-slate-500">{event.source}</span>
-                            <button onClick={() => deleteCalendarEvent(event.id)} className="text-sm text-red-500 hover:text-red-600">Удалить</button>
-                          </div>
+
+                    <div className="grid grid-cols-[72px_1fr] gap-3">
+                      <div className="space-y-2 pt-1 text-right text-xs text-slate-400">
+                        {Array.from({ length: 12 }, (_, i) => `${String(i + 8).padStart(2, "0")}:00`).map((label) => (
+                          <div key={label} className="h-20 pr-2">{label}</div>
+                        ))}
+                      </div>
+
+                      <div className="relative rounded-2xl border bg-slate-50 p-3">
+                        <div className="space-y-2">
+                          {Array.from({ length: 12 }, (_, i) => (
+                            <div key={i} className="h-20 rounded-xl border border-dashed border-slate-200 bg-white/60" />
+                          ))}
                         </div>
-                      ))}
+
+                        <div className="absolute inset-3 space-y-3 pointer-events-none">
+                          {calendarEvents.map((event, index) => {
+                            const [hours, minutes] = (event.time || "12:00").split(":").map(Number);
+                            const top = Math.max(0, ((hours - 8) * 60 + (minutes || 0)) / 15);
+                            return (
+                              <div
+                                key={event.id}
+                                className="pointer-events-auto absolute left-2 right-2 rounded-2xl bg-slate-900/95 p-3 text-white shadow-lg"
+                                style={{ top: `${top}px` }}
+                              >
+                                <input
+                                  value={event.title}
+                                  onChange={(e) => updateCalendarEvent(event.id, { title: e.target.value })}
+                                  className="mb-2 w-full rounded-xl bg-white/10 p-2 font-semibold text-white outline-none placeholder:text-white/70"
+                                />
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                  <input type="date" value={event.date} onChange={(e) => updateCalendarEvent(event.id, { date: e.target.value })} className="rounded-xl bg-white/10 p-2 text-white outline-none" />
+                                  <input type="time" value={event.time} onChange={(e) => updateCalendarEvent(event.id, { time: e.target.value })} className="rounded-xl bg-white/10 p-2 text-white outline-none" />
+                                </div>
+                                <div className="mt-2 flex items-center justify-between text-xs text-white/80">
+                                  <span>{event.source}</span>
+                                  <button onClick={() => deleteCalendarEvent(event.id)} className="text-white hover:text-red-200">Удалить</button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                   </Card>
 
