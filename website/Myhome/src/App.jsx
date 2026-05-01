@@ -12,9 +12,13 @@ const initialProjects = [
     id: 1,
     name: "Основной бизнес",
     yearly: "Выйти на стабильный доход 300 000 ₽/мес",
+    yearlyPeriod: "2026",
     quarterly: "Запустить 2 новых оффера",
+    quarterlyPeriod: "2 квартал",
     monthly: "Довести выручку до 120 000 ₽",
+    monthlyPeriod: "Май",
     weekly: "Закрыть 5 ключевых задач",
+    weeklyPeriod: "до 10.05",
     tasks: [
       { id: 1, title: "Обновить лендинг", done: true },
       { id: 2, title: "Созвониться с 3 клиентами", done: false },
@@ -95,10 +99,11 @@ function MiniLineChart({ values }) {
   );
 }
 
-function GoalInput({ label, value, onChange }) {
+function GoalInput({ label, period, value, onChange }) {
   return (
     <label className="block rounded-2xl border bg-white p-4 shadow-sm">
       <span className="mb-2 block text-sm font-medium text-slate-500">🎯 {label}</span>
+      <div className="mb-2 rounded-xl bg-slate-100 px-3 py-2 text-xs font-medium text-slate-600">{period}</div>
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -120,11 +125,31 @@ function loadSavedState() {
   }
 }
 
+function getCurrentQuarter(monthIndex) {
+  return Math.floor(monthIndex / 3) + 1;
+}
+
+function clearExpiredGoals(project) {
+  const now = new Date();
+  const currentYear = String(now.getFullYear());
+  const currentQuarter = `${getCurrentQuarter(now.getMonth())} квартал`;
+  const currentMonth = months[now.getMonth()];
+  const currentWeekLimit = `до ${String(now.getDate()).padStart(2, "0")}.${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+  return {
+    ...project,
+    yearly: project.yearlyPeriod === currentYear ? project.yearly : "",
+    quarterly: project.quarterlyPeriod === currentQuarter ? project.quarterly : "",
+    monthly: project.monthlyPeriod === currentMonth ? project.monthly : "",
+    weekly: project.weeklyPeriod === currentWeekLimit ? project.weekly : "",
+  };
+}
+
 export default function LifeAnalyticsDashboard() {
   const saved = loadSavedState();
   const [tab, setTab] = useState(saved?.tab || "projects");
   const [income, setIncome] = useState(saved?.income || initialIncome);
-  const [projects, setProjects] = useState(saved?.projects || initialProjects);
+  const [projects, setProjects] = useState((saved?.projects || initialProjects).map(clearExpiredGoals));
   const [newTasks, setNewTasks] = useState(saved?.newTasks || {});
 
   useEffect(() => {
@@ -158,9 +183,13 @@ export default function LifeAnalyticsDashboard() {
       id,
       name: `Проект ${projects.length + 1}`,
       yearly: "",
+      yearlyPeriod: "2026",
       quarterly: "",
+      quarterlyPeriod: "2 квартал",
       monthly: "",
+      monthlyPeriod: "Май",
       weekly: "",
+      weeklyPeriod: "до 10.05",
       tasks: [],
     };
     setProjects((items) => [...items, project]);
@@ -263,10 +292,10 @@ export default function LifeAnalyticsDashboard() {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                      <GoalInput label="Цель на год" value={project.yearly} onChange={(value) => updateProject(project.id, { yearly: value })} />
-                      <GoalInput label="Цель на квартал" value={project.quarterly} onChange={(value) => updateProject(project.id, { quarterly: value })} />
-                      <GoalInput label="Цель на месяц" value={project.monthly} onChange={(value) => updateProject(project.id, { monthly: value })} />
-                      <GoalInput label="Цель на неделю" value={project.weekly} onChange={(value) => updateProject(project.id, { weekly: value })} />
+                      <GoalInput label="Год" period={project.yearlyPeriod || "2026"} value={project.yearly} onChange={(value) => updateProject(project.id, { yearly: value })} />
+                      <GoalInput label="Квартал" period={project.quarterlyPeriod || "2 квартал"} value={project.quarterly} onChange={(value) => updateProject(project.id, { quarterly: value })} />
+                      <GoalInput label="Месяц" period={project.monthlyPeriod || "Май"} value={project.monthly} onChange={(value) => updateProject(project.id, { monthly: value })} />
+                      <GoalInput label="Неделя" period={project.weeklyPeriod || "до 10.05"} value={project.weekly} onChange={(value) => updateProject(project.id, { weekly: value })} />
                     </div>
 
                     <div className="mt-5 rounded-2xl border bg-white p-4">
