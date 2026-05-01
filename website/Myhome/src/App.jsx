@@ -121,11 +121,16 @@ function GoalInput({ label, period, value, onChange }) {
 }
 
 const STORAGE_KEY = "myhome-dashboard-v1";
+const ALLOWED_LOGINS = ["andrey", "Volhova"];
 
-function loadSavedState() {
+function getStorageKey(login) {
+  return `${STORAGE_KEY}-${login || "guest"}`;
+}
+
+function loadSavedState(login) {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(getStorageKey(login));
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -171,7 +176,12 @@ function clearExpiredGoals(project) {
 }
 
 export default function LifeAnalyticsDashboard() {
-  const saved = loadSavedState();
+  const [loginInput, setLoginInput] = useState("");
+  const [activeLogin, setActiveLogin] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem("myhome-active-login") || "";
+  });
+  const saved = loadSavedState(activeLogin);
   const [tab, setTab] = useState(saved?.tab || "projects");
   const [income, setIncome] = useState(saved?.income || initialIncome);
   const [projects, setProjects] = useState((saved?.projects || initialProjects).map(clearExpiredGoals));
@@ -181,14 +191,27 @@ export default function LifeAnalyticsDashboard() {
   const [newWish, setNewWish] = useState(saved?.newWish || "");
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ tab, income, projects, newTasks, wishes, newWish })
-    );
-  }, [tab, income, projects, newTasks, wishes, newWish]);
+    if (!activeLogin || typeof window === "undefined") return;
+    window.localStorage.setItem("myhome-active-login", activeLogin);
+    const nextSaved = loadSavedState(activeLogin);
+    setTab(nextSaved?.tab || "projects");
+    setIncome(nextSaved?.income || initialIncome);
+    setProjects((nextSaved?.projects || initialProjects).map(clearExpiredGoals));
+    setNewTasks(nextSaved?.newTasks || {});
+    setWishes(nextSaved?.wishes || initialWishes);
+    setNewWish(nextSaved?.newWish || "");
+  }, [activeLogin]);
 
   useEffect(() => {
+    if (typeof window === "undefined" || !activeLogin) return;
+    window.localStorage.setItem(
+      getStorageKey(activeLogin),
+      JSON.stringify({ tab, income, projects, newTasks, wishes, newWish })
+    );
+  }, [activeLogin, tab, income, projects, newTasks, wishes, newWish]);
+
+  useEffect(() => {
+    if (!activeLogin) return;
     let cancelled = false;
     fetch(SHEET_API_URL)
       .then((res) => res.json())
@@ -207,7 +230,7 @@ export default function LifeAnalyticsDashboard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [activeLogin]);
 
   const currentMonthIndex = 4;
   const previousIncome = income[Math.max(0, currentMonthIndex - 1)] || 0;
@@ -239,6 +262,17 @@ export default function LifeAnalyticsDashboard() {
 
   function deleteWish(wishId) {
     setWishes((items) => items.filter((wish) => wish.id !== wishId));
+  }
+
+  function handleLogin() {
+    const candidate = loginInput.trim();
+    if (!ALLOWED_LOGINS.includes(candidate)) return;
+    setActiveLogin(candidate);
+  }
+
+  function logout() {
+    setActiveLogin("");
+    setLoginInput("");
   }
 
   function addProject() {
@@ -285,6 +319,32 @@ export default function LifeAnalyticsDashboard() {
     updateProject(projectId, { tasks: project.tasks.filter((task) => task.id !== taskId) });
   }
 
+  if (!activeLogin) {
+    return (
+      <div className="min-h-screen bg-slate-100 p-6 text-slate-900">
+        <div className="mx-auto flex min-h-[80vh] max-w-xl items-center justify-center">
+          <div className="w-full rounded-3xl bg-white p-8 shadow-sm">
+            <div className="mb-3 inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm">🔐 Myhome</div>
+            <h1 className="text-3xl font-bold tracking-tight">Вход по логину</h1>
+            <p className="mt-3 text-sm text-slate-500">Доступные логины: andrey и Volhova</p>
+            <div className="mt-5 flex gap-2">
+              <input
+                value={loginInput}
+                onChange={(event) => setLoginInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") handleLogin();
+                }}
+                placeholder="Введите логин"
+                className="flex-1 rounded-2xl border bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-400"
+              />
+              <Button onClick={handleLogin} disabled={!ALLOWED_LOGINS.includes(loginInput.trim())}>Войти</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 p-6 text-slate-900">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -292,8 +352,12 @@ export default function LifeAnalyticsDashboard() {
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.25em] text-slate-500">Life Analytics</p>
             <h1 className="text-3xl font-bold tracking-tight">Аналитика жизни</h1>
+            <p className="mt-2 text-sm text-slate-500">Профиль: {activeLogin}</p>
           </div>
-          <Button onClick={addProject}>＋ Добавить проект</Button>
+          <div className="flex gap-2">
+            <Button onClick={addProject}>＋ Добавить проект</Button>
+            <Button className="bg-slate-200 text-slate-900 hover:bg-slate-300" onClick={logout}>Сменить логин</Button>
+          </div>
         </header>
 
         <section className="grid gap-4 md:grid-cols-3">
