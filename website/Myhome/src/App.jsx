@@ -9,6 +9,11 @@ const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxV_tBeOiwFCKFSP7
 
 const initialIncome = [35000, 73800, 94000, 22850, 0, 0, 0, 0, 0, 0, 0, 0];
 
+const initialWishes = [
+  { id: 1, text: "Поездка на море", done: false },
+  { id: 2, text: "Новый ноутбук", done: false },
+];
+
 const initialProjects = [
   {
     id: 1,
@@ -172,14 +177,16 @@ export default function LifeAnalyticsDashboard() {
   const [projects, setProjects] = useState((saved?.projects || initialProjects).map(clearExpiredGoals));
   const [newTasks, setNewTasks] = useState(saved?.newTasks || {});
   const [sheetStatus, setSheetStatus] = useState("Финансы пока берутся локально");
+  const [wishes, setWishes] = useState(saved?.wishes || initialWishes);
+  const [newWish, setNewWish] = useState(saved?.newWish || "");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ tab, income, projects, newTasks })
+      JSON.stringify({ tab, income, projects, newTasks, wishes, newWish })
     );
-  }, [tab, income, projects, newTasks]);
+  }, [tab, income, projects, newTasks, wishes, newWish]);
 
   useEffect(() => {
     let cancelled = false;
@@ -217,6 +224,21 @@ export default function LifeAnalyticsDashboard() {
     setProjects((items) =>
       items.map((project) => (project.id === projectId ? { ...project, ...patch } : project))
     );
+  }
+
+  function addWish() {
+    const text = newWish.trim();
+    if (!text) return;
+    setWishes((items) => [...items, { id: Date.now(), text, done: false }]);
+    setNewWish("");
+  }
+
+  function toggleWish(wishId) {
+    setWishes((items) => items.map((wish) => (wish.id === wishId ? { ...wish, done: !wish.done } : wish)));
+  }
+
+  function deleteWish(wishId) {
+    setWishes((items) => items.filter((wish) => wish.id !== wishId));
   }
 
   function addProject() {
@@ -305,6 +327,12 @@ export default function LifeAnalyticsDashboard() {
               className={`rounded-2xl px-4 py-2 text-sm font-medium ${tab === "finance" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
             >
               Личные финансы
+            </button>
+            <button
+              onClick={() => setTab("wishes")}
+              className={`rounded-2xl px-4 py-2 text-sm font-medium ${tab === "wishes" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
+            >
+              Желания
             </button>
           </div>
 
@@ -417,6 +445,44 @@ export default function LifeAnalyticsDashboard() {
                 </section>
 
                 <MiniLineChart values={income} />
+              </div>
+            )}
+
+            {tab === "wishes" && (
+              <div className="space-y-5">
+                <section className="rounded-3xl border bg-slate-50 p-5 shadow-sm">
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-bold">Желания</h2>
+                    <p className="text-sm text-slate-500">Пиши сюда свои желания, хотелки и личные цели.</p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      value={newWish}
+                      onChange={(event) => setNewWish(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") addWish();
+                      }}
+                      placeholder="Напиши своё желание"
+                      className="flex-1 rounded-2xl border bg-white px-4 py-3 text-sm outline-none focus:border-blue-400"
+                    />
+                    <Button onClick={addWish}>Добавить</Button>
+                  </div>
+
+                  <div className="mt-4 grid gap-2 md:grid-cols-2">
+                    {wishes.map((wish) => (
+                      <div key={wish.id} className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm">
+                        <button onClick={() => toggleWish(wish.id)} className="text-lg">
+                          {wish.done ? "💙" : "○"}
+                        </button>
+                        <span className={`flex-1 text-sm ${wish.done ? "text-slate-400 line-through" : "text-slate-800"}`}>
+                          {wish.text}
+                        </span>
+                        <button onClick={() => deleteWish(wish.id)} className="text-slate-400 hover:text-red-500">✕</button>
+                      </div>
+                    ))}
+                  </div>
+                </section>
               </div>
             )}
           </main>
