@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 const months = [
   "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
@@ -108,11 +108,32 @@ function GoalInput({ label, value, onChange }) {
   );
 }
 
+const STORAGE_KEY = "myhome-dashboard-v1";
+
+function loadSavedState() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function LifeAnalyticsDashboard() {
-  const [tab, setTab] = useState("projects");
-  const [income, setIncome] = useState(initialIncome);
-  const [projects, setProjects] = useState(initialProjects);
-  const [newTasks, setNewTasks] = useState({});
+  const saved = loadSavedState();
+  const [tab, setTab] = useState(saved?.tab || "projects");
+  const [income, setIncome] = useState(saved?.income || initialIncome);
+  const [projects, setProjects] = useState(saved?.projects || initialProjects);
+  const [newTasks, setNewTasks] = useState(saved?.newTasks || {});
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ tab, income, projects, newTasks })
+    );
+  }, [tab, income, projects, newTasks]);
 
   const currentMonthIndex = 4;
   const previousIncome = income[Math.max(0, currentMonthIndex - 1)] || 0;
