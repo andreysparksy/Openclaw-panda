@@ -23,12 +23,6 @@ const initialProjects = [
   },
 ];
 
-const initialCalendarEvents = [
-  { id: 1, title: "Созвон с клиентом", date: "2026-05-04", time: "11:00", source: "Ручное" },
-  { id: 2, title: "Публикация поста", date: "2026-05-06", time: "18:00", source: "Контент" },
-  { id: 3, title: "Финансовый разбор", date: "2026-05-08", time: "10:00", source: "Ручное" },
-];
-
 function formatMoney(value) {
   return new Intl.NumberFormat("ru-RU", {
     style: "currency",
@@ -132,15 +126,14 @@ export default function LifeAnalyticsDashboard() {
   const [income, setIncome] = useState(saved?.income || initialIncome);
   const [projects, setProjects] = useState(saved?.projects || initialProjects);
   const [newTasks, setNewTasks] = useState(saved?.newTasks || {});
-  const [calendarEvents, setCalendarEvents] = useState(saved?.calendarEvents || initialCalendarEvents);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ tab, income, projects, newTasks, calendarEvents })
+      JSON.stringify({ tab, income, projects, newTasks })
     );
-  }, [tab, income, projects, newTasks, calendarEvents]);
+  }, [tab, income, projects, newTasks]);
 
   const currentMonthIndex = 4;
   const previousIncome = income[Math.max(0, currentMonthIndex - 1)] || 0;
@@ -203,21 +196,6 @@ export default function LifeAnalyticsDashboard() {
     updateProject(projectId, { tasks: project.tasks.filter((task) => task.id !== taskId) });
   }
 
-  function addCalendarEvent() {
-    setCalendarEvents((items) => [
-      ...items,
-      { id: Date.now(), title: "Новое событие", date: "2026-05-10", time: "12:00", source: "Ручное" },
-    ]);
-  }
-
-  function updateCalendarEvent(eventId, patch) {
-    setCalendarEvents((items) => items.map((event) => (event.id === eventId ? { ...event, ...patch } : event)));
-  }
-
-  function deleteCalendarEvent(eventId) {
-    setCalendarEvents((items) => items.filter((event) => event.id !== eventId));
-  }
-
   return (
     <div className="min-h-screen bg-slate-100 p-6 text-slate-900">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -260,12 +238,6 @@ export default function LifeAnalyticsDashboard() {
               className={`rounded-2xl px-4 py-2 text-sm font-medium ${tab === "finance" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
             >
               Личные финансы
-            </button>
-            <button
-              onClick={() => setTab("calendar")}
-              className={`rounded-2xl px-4 py-2 text-sm font-medium ${tab === "calendar" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
-            >
-              Календарь
             </button>
           </div>
 
@@ -377,75 +349,6 @@ export default function LifeAnalyticsDashboard() {
                 </section>
 
                 <MiniLineChart values={income} />
-              </div>
-            )}
-
-            {tab === "calendar" && (
-              <div className="space-y-5">
-                <section className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-                  <Card>
-                    <div className="mb-4 flex items-center justify-between">
-                      <div>
-                        <h2 className="text-2xl font-bold">Дневной календарь</h2>
-                        <p className="text-sm text-slate-500">Основа под интеграцию с iCloud Calendar</p>
-                      </div>
-                      <Button onClick={addCalendarEvent}>＋ Добавить событие</Button>
-                    </div>
-
-                    <div className="grid grid-cols-[72px_1fr] gap-3">
-                      <div className="space-y-2 pt-1 text-right text-xs text-slate-400">
-                        {Array.from({ length: 12 }, (_, i) => `${String(i + 8).padStart(2, "0")}:00`).map((label) => (
-                          <div key={label} className="h-20 pr-2">{label}</div>
-                        ))}
-                      </div>
-
-                      <div className="relative rounded-2xl border bg-slate-50 p-3">
-                        <div className="space-y-2">
-                          {Array.from({ length: 12 }, (_, i) => (
-                            <div key={i} className="h-20 rounded-xl border border-dashed border-slate-200 bg-white/60" />
-                          ))}
-                        </div>
-
-                        <div className="absolute inset-3 space-y-3 pointer-events-none">
-                          {calendarEvents.map((event, index) => {
-                            const [hours, minutes] = (event.time || "12:00").split(":").map(Number);
-                            const top = Math.max(0, ((hours - 8) * 60 + (minutes || 0)) / 15);
-                            return (
-                              <div
-                                key={event.id}
-                                className="pointer-events-auto absolute left-2 right-2 rounded-2xl bg-slate-900/95 p-3 text-white shadow-lg"
-                                style={{ top: `${top}px` }}
-                              >
-                                <input
-                                  value={event.title}
-                                  onChange={(e) => updateCalendarEvent(event.id, { title: e.target.value })}
-                                  className="mb-2 w-full rounded-xl bg-white/10 p-2 font-semibold text-white outline-none placeholder:text-white/70"
-                                />
-                                <div className="grid gap-2 sm:grid-cols-2">
-                                  <input type="date" value={event.date} onChange={(e) => updateCalendarEvent(event.id, { date: e.target.value })} className="rounded-xl bg-white/10 p-2 text-white outline-none" />
-                                  <input type="time" value={event.time} onChange={(e) => updateCalendarEvent(event.id, { time: e.target.value })} className="rounded-xl bg-white/10 p-2 text-white outline-none" />
-                                </div>
-                                <div className="mt-2 flex items-center justify-between text-xs text-white/80">
-                                  <span>{event.source}</span>
-                                  <button onClick={() => deleteCalendarEvent(event.id)} className="text-white hover:text-red-200">Удалить</button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-
-                  <Card>
-                    <h3 className="text-xl font-semibold text-slate-700">iCloud интеграция</h3>
-                    <div className="mt-4 space-y-3 text-sm text-slate-600">
-                      <div className="rounded-2xl bg-slate-50 p-4">Следующий шаг — подключение iCloud Calendar через CalDAV.</div>
-                      <div className="rounded-2xl bg-slate-50 p-4">Понадобится Apple ID, app-specific password и backend-слой для синхронизации.</div>
-                      <div className="rounded-2xl bg-slate-50 p-4">После интеграции здесь можно показать реальные события, дедлайны и свободные окна.</div>
-                    </div>
-                  </Card>
-                </section>
               </div>
             )}
           </main>
