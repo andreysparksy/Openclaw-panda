@@ -129,19 +129,37 @@ function getCurrentQuarter(monthIndex) {
   return Math.floor(monthIndex / 3) + 1;
 }
 
-function clearExpiredGoals(project) {
+function getCurrentPeriods() {
   const now = new Date();
-  const currentYear = String(now.getFullYear());
-  const currentQuarter = `${getCurrentQuarter(now.getMonth())} квартал`;
-  const currentMonth = months[now.getMonth()];
-  const currentWeekLimit = `до ${String(now.getDate()).padStart(2, "0")}.${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const weekEnd = new Date(now);
+  weekEnd.setDate(now.getDate() + (7 - now.getDay() || 7));
+  return {
+    yearlyPeriod: String(now.getFullYear()),
+    quarterlyPeriod: `${getCurrentQuarter(now.getMonth())} квартал`,
+    monthlyPeriod: months[now.getMonth()],
+    weeklyPeriod: `до ${String(weekEnd.getDate()).padStart(2, "0")}.${String(weekEnd.getMonth() + 1).padStart(2, "0")}`,
+  };
+}
 
+function withCurrentPeriods(project) {
+  const periods = getCurrentPeriods();
   return {
     ...project,
-    yearly: project.yearlyPeriod === currentYear ? project.yearly : "",
-    quarterly: project.quarterlyPeriod === currentQuarter ? project.quarterly : "",
-    monthly: project.monthlyPeriod === currentMonth ? project.monthly : "",
-    weekly: project.weeklyPeriod === currentWeekLimit ? project.weekly : "",
+    yearlyPeriod: periods.yearlyPeriod,
+    quarterlyPeriod: periods.quarterlyPeriod,
+    monthlyPeriod: periods.monthlyPeriod,
+    weeklyPeriod: periods.weeklyPeriod,
+  };
+}
+
+function clearExpiredGoals(project) {
+  const periods = getCurrentPeriods();
+  return {
+    ...withCurrentPeriods(project),
+    yearly: project.yearlyPeriod === periods.yearlyPeriod ? project.yearly : "",
+    quarterly: project.quarterlyPeriod === periods.quarterlyPeriod ? project.quarterly : "",
+    monthly: project.monthlyPeriod === periods.monthlyPeriod ? project.monthly : "",
+    weekly: project.weeklyPeriod === periods.weeklyPeriod ? project.weekly : "",
   };
 }
 
@@ -179,19 +197,15 @@ export default function LifeAnalyticsDashboard() {
 
   function addProject() {
     const id = Date.now();
-    const project = {
+    const project = withCurrentPeriods({
       id,
       name: `Проект ${projects.length + 1}`,
       yearly: "",
-      yearlyPeriod: "2026",
       quarterly: "",
-      quarterlyPeriod: "2 квартал",
       monthly: "",
-      monthlyPeriod: "Май",
       weekly: "",
-      weeklyPeriod: "до 10.05",
       tasks: [],
-    };
+    });
     setProjects((items) => [...items, project]);
     setTab("projects");
   }
@@ -292,10 +306,10 @@ export default function LifeAnalyticsDashboard() {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                      <GoalInput label="Год" period={project.yearlyPeriod || "2026"} value={project.yearly} onChange={(value) => updateProject(project.id, { yearly: value })} />
-                      <GoalInput label="Квартал" period={project.quarterlyPeriod || "2 квартал"} value={project.quarterly} onChange={(value) => updateProject(project.id, { quarterly: value })} />
-                      <GoalInput label="Месяц" period={project.monthlyPeriod || "Май"} value={project.monthly} onChange={(value) => updateProject(project.id, { monthly: value })} />
-                      <GoalInput label="Неделя" period={project.weeklyPeriod || "до 10.05"} value={project.weekly} onChange={(value) => updateProject(project.id, { weekly: value })} />
+                      <GoalInput label="Год" period={project.yearlyPeriod} value={project.yearly} onChange={(value) => updateProject(project.id, { yearly: value })} />
+                      <GoalInput label="Квартал" period={project.quarterlyPeriod} value={project.quarterly} onChange={(value) => updateProject(project.id, { quarterly: value })} />
+                      <GoalInput label="Месяц" period={project.monthlyPeriod} value={project.monthly} onChange={(value) => updateProject(project.id, { monthly: value })} />
+                      <GoalInput label="Неделя" period={project.weeklyPeriod} value={project.weekly} onChange={(value) => updateProject(project.id, { weekly: value })} />
                     </div>
 
                     <div className="mt-5 rounded-2xl border bg-white p-4">
