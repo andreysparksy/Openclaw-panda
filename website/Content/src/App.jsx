@@ -346,7 +346,7 @@ export default function App() {
       <div className="min-h-screen bg-slate-50 p-6 text-slate-900">
         <div className="mx-auto flex min-h-[80vh] max-w-xl items-center justify-center">
           <div className="w-full rounded-3xl bg-white p-8 shadow-sm">
-            <div className="mb-3 inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm">✨ Content</div>
+            <div className="mb-3 inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm">✨ PANDAPOST</div>
             <h1 className="text-3xl font-bold tracking-tight">Вход в проект</h1>
             <p className="mt-3 text-sm text-slate-500">Сейчас доступен один логин проекта: PANDAVKADS</p>
             <div className="mt-5 flex gap-2">
