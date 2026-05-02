@@ -505,45 +505,49 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <div className="mb-2 font-semibold">Площадки</div>
-                    <div className="flex flex-wrap gap-2">
-                      {platforms.map((p) => (
-                        <Button key={p} active={selected.platforms.includes(p)} onClick={() => togglePlatform(p)}>
-                          {selected.platforms.includes(p) ? "✓ " : "+ "}{p}
-                        </Button>
-                      ))}
+                {selected.status === "Идея" && (
+                  <>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <div className="mb-2 font-semibold">Площадки</div>
+                        <div className="flex flex-wrap gap-2">
+                          {platforms.map((p) => (
+                            <Button key={p} active={selected.platforms.includes(p)} onClick={() => togglePlatform(p)}>
+                              {selected.platforms.includes(p) ? "✓ " : "+ "}{p}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="mb-2 font-semibold">Дата публикации</div>
+                        <input
+                          type="date"
+                          value={selected.date.toISOString().slice(0, 10)}
+                          onChange={(e) => setPostDate(e.target.value)}
+                          className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <div className="mb-2 font-semibold">Дата публикации</div>
-                    <input
-                      type="date"
-                      value={selected.date.toISOString().slice(0, 10)}
-                      onChange={(e) => setPostDate(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
-                    />
-                  </div>
-                </div>
 
-                <div>
-                  <div className="mb-2 font-semibold">Статус</div>
-                  <div className="flex flex-wrap gap-2">
-                    {workflowStatuses.map((status) => (
-                      <Button key={status} active={selected.status === status} onClick={() => setStatus(status)}>{status}</Button>
-                    ))}
-                  </div>
-                </div>
+                    <div>
+                      <div className="mb-2 font-semibold">Статус</div>
+                      <div className="flex flex-wrap gap-2">
+                        {workflowStatuses.map((status) => (
+                          <Button key={status} active={selected.status === status} onClick={() => setStatus(status)}>{status}</Button>
+                        ))}
+                      </div>
+                    </div>
 
-                <div className="rounded-2xl bg-slate-100 p-4 text-sm text-slate-600 space-y-3">
-                  <div>
-                    <div className="mb-2 font-semibold text-slate-800">HTML-файл для tone of voice</div>
-                    <input type="file" accept=".html,.htm,text/html" onChange={uploadToneFile} className="block w-full text-sm" />
-                    {toneFileName && <div className="mt-2 text-xs text-slate-500">Загружен файл: {toneFileName}</div>}
-                    {tonePreview && <div className="mt-2 rounded-xl bg-white p-3 text-xs text-slate-600">Превью: {tonePreview}</div>}
-                  </div>
-                </div>
+                    <div className="rounded-2xl bg-slate-100 p-4 text-sm text-slate-600 space-y-3">
+                      <div>
+                        <div className="mb-2 font-semibold text-slate-800">HTML-файл для tone of voice</div>
+                        <input type="file" accept=".html,.htm,text/html" onChange={uploadToneFile} className="block w-full text-sm" />
+                        {toneFileName && <div className="mt-2 text-xs text-slate-500">Загружен файл: {toneFileName}</div>}
+                        {tonePreview && <div className="mt-2 rounded-xl bg-white p-3 text-xs text-slate-600">Превью: {tonePreview}</div>}
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 {selected.draft && selected.status === "Идея" && (
                   <div className="space-y-5">
