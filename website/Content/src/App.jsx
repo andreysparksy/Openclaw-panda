@@ -581,14 +581,6 @@ export default function App() {
                             </div>
                           </div>
                         )}
-                        <div>
-                          <div className="mb-2 font-semibold text-slate-800">Готовый пост</div>
-                          <textarea
-                            value={selected.draft.telegram}
-                            onChange={(e) => patchSelected({ draft: { ...selected.draft, telegram: e.target.value } })}
-                            className="min-h-[240px] w-full rounded-2xl bg-slate-100 p-4 font-sans text-sm outline-none"
-                          />
-                        </div>
                       </div>
                     )}
 
