@@ -215,14 +215,14 @@ export default function App() {
   function createDraft() {
     if (!selected) return;
     setActivity("Собираю черновик…");
-    const existingNotes = selected.draft?.notes || "";
-    setTimeout(() => {
-      const nextDraft = makeDraft(selected, toneFileName || tonePreview);
-      nextDraft.notes = existingNotes;
-      nextDraft.notesHistory = selected.draft?.notesHistory || [];
-      patchSelected({ status: "Черновик", draft: nextDraft });
-      setActivity("Черновик готов");
-    }, 400);
+    const existingDraft = selected.draft || makeDraft(selected, toneFileName || tonePreview);
+    const nextDraft = {
+      ...makeDraft(selected, toneFileName || tonePreview),
+      notes: existingDraft.notes || "",
+      notesHistory: existingDraft.notesHistory || [],
+    };
+    patchSelected({ status: "Черновик", draft: nextDraft });
+    setActivity("Черновик готов");
   }
 
   function togglePlatform(p) {
