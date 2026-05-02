@@ -553,16 +553,18 @@ export default function App() {
                           <h2 className="text-xl font-bold">Telegram</h2>
                           <Button active onClick={() => publish("Telegram")}>{selected.published.Telegram ? "✅ Опубликовано" : "🚀 Опубликовать"}</Button>
                         </div>
-                        <div className="mb-4 space-y-3 rounded-2xl bg-slate-50 p-4">
-                          <div className="font-semibold text-slate-800">Рабочие заметки</div>
-                          <textarea
-                            value={selected.draft.notes || ""}
-                            onChange={(e) => updateNotes(e.target.value)}
-                            placeholder="Сюда вноси тезисы, факты, мысли, куски исходников."
-                            className="min-h-[160px] w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm outline-none"
-                          />
-                          <Button active onClick={addNote}>✨ Внести заметку</Button>
-                        </div>
+                        {selected.status !== "Черновик" && selected.status !== "Чистовик" && (
+                          <div className="mb-4 space-y-3 rounded-2xl bg-slate-50 p-4">
+                            <div className="font-semibold text-slate-800">Рабочие заметки</div>
+                            <textarea
+                              value={selected.draft.notes || ""}
+                              onChange={(e) => updateNotes(e.target.value)}
+                              placeholder="Сюда вноси тезисы, факты, мысли, куски исходников."
+                              className="min-h-[160px] w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm outline-none"
+                            />
+                            <Button active onClick={addNote}>✨ Внести заметку</Button>
+                          </div>
+                        )}
                         {selected.draft.notesHistory?.length > 0 && (
                           <div className="rounded-2xl bg-white p-4 text-sm text-slate-700">
                             <div className="mb-2 font-semibold text-slate-800">Внесённые заметки</div>
