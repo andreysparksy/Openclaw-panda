@@ -238,6 +238,33 @@ export default function App() {
     patchSelected({ draft: { ...selected.draft, notes: value } });
   }
 
+  function removeNote(indexToRemove) {
+    if (!selected || !selected.draft) return;
+    const nextHistory = (selected.draft.notesHistory || []).filter((_, index) => index !== indexToRemove);
+    const notesBlock = nextHistory.map((item, index) => `${index + 1}. ${item}`).join("\n");
+    const draft = {
+      ...selected.draft,
+      notesHistory: nextHistory,
+      telegram: nextHistory.length
+        ? `🔥 ${selected.idea}\n\nЗаметки по теме:\n${notesBlock}\n\nВывод: ${selected.angle}.\n\nЕсли нужен такой же разбор под проект — напиши.`
+        : `🔥 ${selected.idea}\n\n${selected.angle}.\n\nЕсли нужен такой же разбор под проект — напиши.`,
+      vk: nextHistory.length
+        ? `Пост для VK: ${selected.idea}\n\nЗаметки:\n${notesBlock}\n\nВывод: ${selected.angle}.`
+        : `Пост для VK: ${selected.idea}\n\n${selected.angle}`,
+    };
+    patchSelected({ draft });
+    setActivity("Заметка удалена");
+  }
+
+  function editNote(indexToEdit) {
+    if (!selected || !selected.draft) return;
+    const note = selected.draft.notesHistory?.[indexToEdit];
+    if (!note) return;
+    const nextHistory = (selected.draft.notesHistory || []).filter((_, index) => index !== indexToEdit);
+    patchSelected({ draft: { ...selected.draft, notes: note, notesHistory: nextHistory } });
+    setActivity("Заметка возвращена в поле для редактирования");
+  }
+
   function addNote() {
     if (!selected || !selected.draft) return;
     const note = selected.draft.notes?.trim();
@@ -541,7 +568,15 @@ export default function App() {
                             <div className="mb-2 font-semibold text-slate-800">Внесённые заметки</div>
                             <div className="space-y-2">
                               {selected.draft.notesHistory.map((note, index) => (
-                                <div key={`${index}-${note}`} className="rounded-xl bg-slate-50 px-3 py-2">{index + 1}. {note}</div>
+                                <div key={`${index}-${note}`} className="rounded-xl bg-slate-50 px-3 py-2">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>{index + 1}. {note}</div>
+                                    <div className="flex gap-2">
+                                      <button onClick={() => editNote(index)} className="text-xs text-slate-500 hover:text-slate-900">Редактировать</button>
+                                      <button onClick={() => removeNote(index)} className="text-xs text-red-500 hover:text-red-700">Удалить</button>
+                                    </div>
+                                  </div>
+                                </div>
                               ))}
                             </div>
                           </div>
