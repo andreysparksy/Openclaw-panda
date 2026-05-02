@@ -57,6 +57,7 @@ function Button({ children, onClick, active, disabled, className = "" }) {
 function makeDraft(item, toneSource) {
   return {
     notes: "",
+    notesHistory: [],
     telegram: `🔥 ${item.idea}\n\n${item.angle}.\n\nГлавная мысль: контент должен не просто выходить, а вести к нужному действию.\n\nТон-источник: ${toneSource || "не загружен"}.\n\nЕсли хочешь такую же систему под проект — напиши в личку.`,
     vk: `Пост для VK: ${item.idea}\n\n${item.angle}\n\nЗдесь можно сделать более развёрнутую версию поста с кейсом, выводом и призывом.`,
     bannerReady: false,
@@ -218,6 +219,7 @@ export default function App() {
     setTimeout(() => {
       const nextDraft = makeDraft(selected, toneFileName || tonePreview);
       nextDraft.notes = existingNotes;
+      nextDraft.notesHistory = selected.draft?.notesHistory || [];
       patchSelected({ status: "Черновик", draft: nextDraft });
       setActivity("Черновик готов");
     }, 400);
@@ -236,18 +238,24 @@ export default function App() {
     patchSelected({ draft: { ...selected.draft, notes: value } });
   }
 
-  function generateFromNotes() {
+  function addNote() {
     if (!selected || !selected.draft) return;
-    const notes = selected.draft.notes?.trim();
-    if (!notes) {
-      setActivity("Сначала добавь заметки");
+    const note = selected.draft.notes?.trim();
+    if (!note) {
+      setActivity("Сначала напиши заметку");
       return;
     }
-    const draft = { ...selected.draft };
-    draft.telegram = `🔥 ${selected.idea}\n\n${notes}\n\nВывод: ${selected.angle}.\n\nЕсли нужен такой же разбор под проект — напиши.`;
-    draft.vk = `Пост для VK: ${selected.idea}\n\n${notes}\n\nВывод: ${selected.angle}.`;
+    const previousNotes = selected.draft.notesHistory || [];
+    const draft = {
+      ...selected.draft,
+      notes: "",
+      notesHistory: [...previousNotes, note],
+    };
+    const notesBlock = draft.notesHistory.map((item, index) => `${index + 1}. ${item}`).join("\n");
+    draft.telegram = `🔥 ${selected.idea}\n\nЗаметки по теме:\n${notesBlock}\n\nВывод: ${selected.angle}.\n\nЕсли нужен такой же разбор под проект — напиши.`;
+    draft.vk = `Пост для VK: ${selected.idea}\n\nЗаметки:\n${notesBlock}\n\nВывод: ${selected.angle}.`;
     patchSelected({ draft, status: "Черновик" });
-    setActivity("Пост сгенерирован из заметок");
+    setActivity("Заметка добавлена");
   }
 
   function uploadToneFile(event) {
@@ -526,8 +534,18 @@ export default function App() {
                             placeholder="Сюда вноси тезисы, факты, мысли, куски исходников."
                             className="min-h-[160px] w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm outline-none"
                           />
-                          <Button active onClick={generateFromNotes}>✨ Сгенерировать</Button>
+                          <Button active onClick={addNote}>✨ Внести заметку</Button>
                         </div>
+                        {selected.draft.notesHistory?.length > 0 && (
+                          <div className="rounded-2xl bg-white p-4 text-sm text-slate-700">
+                            <div className="mb-2 font-semibold text-slate-800">Внесённые заметки</div>
+                            <div className="space-y-2">
+                              {selected.draft.notesHistory.map((note, index) => (
+                                <div key={`${index}-${note}`} className="rounded-xl bg-slate-50 px-3 py-2">{index + 1}. {note}</div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                         <div>
                           <div className="mb-2 font-semibold text-slate-800">Готовый пост</div>
                           <textarea
