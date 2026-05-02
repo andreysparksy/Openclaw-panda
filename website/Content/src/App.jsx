@@ -545,7 +545,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {selected.draft && (
+                {selected.draft && selected.status === "Идея" && (
                   <div className="space-y-5">
                     {selected.platforms.includes("Telegram") && (
                       <div className="rounded-3xl border border-slate-200 p-4">
