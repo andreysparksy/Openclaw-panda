@@ -539,19 +539,6 @@ export default function App() {
                       </div>
                     )}
 
-                    {selected.platforms.includes("VK") && (
-                      <div className="rounded-3xl border border-slate-200 p-4">
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                          <h2 className="text-xl font-bold">VK</h2>
-                          <Button active onClick={() => publish("VK")}>{selected.published.VK ? "✅ Опубликовано" : "🚀 Опубликовать"}</Button>
-                        </div>
-                        <textarea
-                          value={selected.draft.vk}
-                          onChange={(e) => patchSelected({ draft: { ...selected.draft, vk: e.target.value } })}
-                          className="min-h-[220px] w-full rounded-2xl bg-slate-100 p-4 text-sm outline-none"
-                        />
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
