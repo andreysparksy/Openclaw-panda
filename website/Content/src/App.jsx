@@ -85,7 +85,6 @@ function getInitialProjectState(login) {
   return {
     projectLogin: login,
     monthStart: getDefaultMonthStart().toISOString(),
-    currentTab: "content",
     selectedId: null,
     items: [],
     channels: [],
@@ -120,7 +119,6 @@ export default function App() {
   const [working, setWorking] = useState(false);
 
   const [monthStart, setMonthStart] = useState(getDefaultMonthStart());
-  const [currentTab, setCurrentTab] = useState("content");
   const [items, setItems] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [channels, setChannels] = useState([]);
@@ -133,7 +131,6 @@ export default function App() {
     window.localStorage.setItem(ACTIVE_LOGIN_KEY, projectLogin);
     const saved = readProjectState(projectLogin);
     setMonthStart(new Date(saved.monthStart || getDefaultMonthStart().toISOString()));
-    setCurrentTab(saved.currentTab || "content");
     setItems(saved.items || []);
     setSelectedId(saved.selectedId || null);
     setChannels(saved.channels || []);
@@ -148,7 +145,6 @@ export default function App() {
       JSON.stringify({
         projectLogin,
         monthStart: monthStart.toISOString(),
-        currentTab,
         selectedId,
         items: serializeItems(items),
         channels,
@@ -156,7 +152,7 @@ export default function App() {
         tonePreview,
       })
     );
-  }, [projectLogin, monthStart, currentTab, selectedId, items, channels, toneFileName, tonePreview]);
+  }, [projectLogin, monthStart, selectedId, items, channels, toneFileName, tonePreview]);
 
   const calendarDays = useMemo(() => getThirtyDays(monthStart), [monthStart]);
   const scheduledItems = useMemo(() => items.filter((item) => item.hasDeadline), [items]);
@@ -435,15 +431,6 @@ export default function App() {
           </div>
         </section>
 
-        <section className="rounded-3xl bg-white p-3 shadow-sm">
-          <div className="flex flex-wrap gap-2">
-            <Button active={currentTab === "content"} onClick={() => setCurrentTab("content")}>Контент-план</Button>
-            <Button active={currentTab === "channels"} onClick={() => setCurrentTab("channels")}>Каналы</Button>
-          </div>
-        </section>
-
-        {currentTab === "content" && (
-          <>
         <section className="flex flex-col justify-between gap-4 rounded-3xl bg-white p-5 shadow-sm md:flex-row md:items-center">
           <div>
             <div className="text-sm text-slate-500">Календарь проекта</div>
@@ -663,15 +650,12 @@ export default function App() {
             ))}
           </aside>
         </main>
-          </>
-        )}
 
-        {currentTab === "channels" && (
-          <section className="grid gap-6 lg:grid-cols-[0.95fr_1.4fr]">
+        <section className="grid gap-6 lg:grid-cols-[0.95fr_1.4fr]">
             <div className="rounded-3xl bg-white p-6 shadow-sm">
               <div className="mb-4">
-                <div className="text-lg font-semibold">Добавить канал</div>
-                <div className="text-sm text-slate-500">Веди здесь сетку каналов по проекту.</div>
+                <div className="text-lg font-semibold">Каналы проекта</div>
+                <div className="text-sm text-slate-500">Добавляй сюда каналы, чтобы видеть сетку проекта в одном месте.</div>
               </div>
 
               <div className="space-y-3">
@@ -737,7 +721,6 @@ export default function App() {
               </div>
             </div>
           </section>
-        )}
       </div>
     </div>
   );
