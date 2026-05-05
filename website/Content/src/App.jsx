@@ -125,6 +125,8 @@ export default function App() {
   const [toneFileName, setToneFileName] = useState("");
   const [tonePreview, setTonePreview] = useState("");
   const [newChannel, setNewChannel] = useState({ name: "", subscribers: "", invested: "", reach: "" });
+  const [editingChannelId, setEditingChannelId] = useState(null);
+  const [editingChannel, setEditingChannel] = useState({ subscribers: "", invested: "", reach: "" });
   const [projectLoaded, setProjectLoaded] = useState(false);
 
   useEffect(() => {
@@ -372,6 +374,22 @@ export default function App() {
 
   function updateChannel(channelId, patch) {
     setChannels((prev) => prev.map((channel) => (channel.id === channelId ? { ...channel, ...patch } : channel)));
+  }
+
+  function startEditChannel(channel) {
+    setEditingChannelId(channel.id);
+    setEditingChannel({
+      subscribers: channel.subscribers || "",
+      invested: channel.invested || "",
+      reach: channel.reach || "",
+    });
+  }
+
+  function saveChannelEdit() {
+    if (!editingChannelId) return;
+    updateChannel(editingChannelId, editingChannel);
+    setEditingChannelId(null);
+    setEditingChannel({ subscribers: "", invested: "", reach: "" });
   }
 
   if (!projectLogin) {
@@ -716,27 +734,43 @@ export default function App() {
                       <div>
                         <div className="text-lg font-semibold">{channel.name}</div>
                         <div className="mt-3 grid gap-2 text-sm text-slate-600 md:grid-cols-3">
-                          <label className="flex items-center gap-2">
-                            <span className="text-slate-400">Подписчики:</span>
-                            <input
-                              value={channel.subscribers || ""}
-                              onChange={(e) => updateChannel(channel.id, { subscribers: e.target.value })}
-                              className="w-28 rounded-xl border border-slate-300 px-3 py-2 text-sm"
-                            />
-                          </label>
+                          <div><span className="text-slate-400">Подписчики:</span> {channel.subscribers || "—"}</div>
                           <div><span className="text-slate-400">Вложено:</span> {channel.invested || "—"}</div>
-                          <label className="flex items-center gap-2">
-                            <span className="text-slate-400">Охваты:</span>
-                            <input
-                              value={channel.reach || ""}
-                              onChange={(e) => updateChannel(channel.id, { reach: e.target.value })}
-                              className="w-28 rounded-xl border border-slate-300 px-3 py-2 text-sm"
-                            />
-                          </label>
+                          <div><span className="text-slate-400">Охваты:</span> {channel.reach || "—"}</div>
                         </div>
                       </div>
-                      <button onClick={() => removeChannel(channel.id)} className="text-sm text-red-500 hover:text-red-700">Удалить</button>
+                      <div className="flex gap-3">
+                        <button onClick={() => startEditChannel(channel)} className="text-sm text-slate-500 hover:text-slate-900">Редактировать</button>
+                        <button onClick={() => removeChannel(channel.id)} className="text-sm text-red-500 hover:text-red-700">Удалить</button>
+                      </div>
                     </div>
+
+                    {editingChannelId === channel.id && (
+                      <div className="mt-4 grid gap-3 md:grid-cols-3">
+                        <input
+                          value={editingChannel.subscribers}
+                          onChange={(e) => setEditingChannel((prev) => ({ ...prev, subscribers: e.target.value }))}
+                          placeholder="Кол-во подписчиков"
+                          className="rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+                        />
+                        <input
+                          value={editingChannel.invested}
+                          onChange={(e) => setEditingChannel((prev) => ({ ...prev, invested: e.target.value }))}
+                          placeholder="Сколько вложено"
+                          className="rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+                        />
+                        <input
+                          value={editingChannel.reach}
+                          onChange={(e) => setEditingChannel((prev) => ({ ...prev, reach: e.target.value }))}
+                          placeholder="Средние охваты"
+                          className="rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+                        />
+                        <div className="md:col-span-3 flex gap-2">
+                          <Button active onClick={saveChannelEdit}>Сохранить</Button>
+                          <Button onClick={() => setEditingChannelId(null)}>Отмена</Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
