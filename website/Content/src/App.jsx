@@ -125,6 +125,7 @@ export default function App() {
   const [toneFileName, setToneFileName] = useState("");
   const [tonePreview, setTonePreview] = useState("");
   const [newChannel, setNewChannel] = useState({ name: "", subscribers: "", invested: "", reach: "" });
+  const [projectLoaded, setProjectLoaded] = useState(false);
 
   useEffect(() => {
     if (!projectLogin || typeof window === "undefined") return;
@@ -136,10 +137,11 @@ export default function App() {
     setChannels(saved.channels || []);
     setToneFileName(saved.toneFileName || "");
     setTonePreview(saved.tonePreview || "");
+    setProjectLoaded(true);
   }, [projectLogin]);
 
   useEffect(() => {
-    if (!projectLogin || typeof window === "undefined") return;
+    if (!projectLogin || typeof window === "undefined" || !projectLoaded) return;
     window.localStorage.setItem(
       getStorageKey(projectLogin),
       JSON.stringify({
@@ -152,7 +154,7 @@ export default function App() {
         tonePreview,
       })
     );
-  }, [projectLogin, monthStart, selectedId, items, channels, toneFileName, tonePreview]);
+  }, [projectLogin, projectLoaded, monthStart, selectedId, items, channels, toneFileName, tonePreview]);
 
   const calendarDays = useMemo(() => getThirtyDays(monthStart), [monthStart]);
   const scheduledItems = useMemo(() => items.filter((item) => item.hasDeadline), [items]);
@@ -181,6 +183,7 @@ export default function App() {
   function logoutProject() {
     setProjectLogin("");
     setProjectLoginInput("");
+    setProjectLoaded(false);
   }
 
   function shiftMonth(delta) {
