@@ -370,6 +370,10 @@ export default function App() {
     setChannels((prev) => prev.filter((channel) => channel.id !== channelId));
   }
 
+  function updateChannel(channelId, patch) {
+    setChannels((prev) => prev.map((channel) => (channel.id === channelId ? { ...channel, ...patch } : channel)));
+  }
+
   if (!projectLogin) {
     return (
       <div className="min-h-screen bg-slate-50 p-6 text-slate-900">
@@ -712,9 +716,23 @@ export default function App() {
                       <div>
                         <div className="text-lg font-semibold">{channel.name}</div>
                         <div className="mt-3 grid gap-2 text-sm text-slate-600 md:grid-cols-3">
-                          <div><span className="text-slate-400">Подписчики:</span> {channel.subscribers || "—"}</div>
+                          <label className="flex items-center gap-2">
+                            <span className="text-slate-400">Подписчики:</span>
+                            <input
+                              value={channel.subscribers || ""}
+                              onChange={(e) => updateChannel(channel.id, { subscribers: e.target.value })}
+                              className="w-28 rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                            />
+                          </label>
                           <div><span className="text-slate-400">Вложено:</span> {channel.invested || "—"}</div>
-                          <div><span className="text-slate-400">Охваты:</span> {channel.reach || "—"}</div>
+                          <label className="flex items-center gap-2">
+                            <span className="text-slate-400">Охваты:</span>
+                            <input
+                              value={channel.reach || ""}
+                              onChange={(e) => updateChannel(channel.id, { reach: e.target.value })}
+                              className="w-28 rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                            />
+                          </label>
                         </div>
                       </div>
                       <button onClick={() => removeChannel(channel.id)} className="text-sm text-red-500 hover:text-red-700">Удалить</button>
