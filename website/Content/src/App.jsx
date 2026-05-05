@@ -85,8 +85,10 @@ function getInitialProjectState(login) {
   return {
     projectLogin: login,
     monthStart: getDefaultMonthStart().toISOString(),
+    currentTab: "content",
     selectedId: null,
     items: [],
+    channels: [],
     toneFileName: "",
     tonePreview: "",
   };
@@ -118,18 +120,23 @@ export default function App() {
   const [working, setWorking] = useState(false);
 
   const [monthStart, setMonthStart] = useState(getDefaultMonthStart());
+  const [currentTab, setCurrentTab] = useState("content");
   const [items, setItems] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
+  const [channels, setChannels] = useState([]);
   const [toneFileName, setToneFileName] = useState("");
   const [tonePreview, setTonePreview] = useState("");
+  const [newChannel, setNewChannel] = useState({ name: "", subscribers: "", invested: "", reach: "" });
 
   useEffect(() => {
     if (!projectLogin || typeof window === "undefined") return;
     window.localStorage.setItem(ACTIVE_LOGIN_KEY, projectLogin);
     const saved = readProjectState(projectLogin);
     setMonthStart(new Date(saved.monthStart || getDefaultMonthStart().toISOString()));
+    setCurrentTab(saved.currentTab || "content");
     setItems(saved.items || []);
     setSelectedId(saved.selectedId || null);
+    setChannels(saved.channels || []);
     setToneFileName(saved.toneFileName || "");
     setTonePreview(saved.tonePreview || "");
   }, [projectLogin]);
@@ -141,13 +148,15 @@ export default function App() {
       JSON.stringify({
         projectLogin,
         monthStart: monthStart.toISOString(),
+        currentTab,
         selectedId,
         items: serializeItems(items),
+        channels,
         toneFileName,
         tonePreview,
       })
     );
-  }, [projectLogin, monthStart, selectedId, items, toneFileName, tonePreview]);
+  }, [projectLogin, monthStart, currentTab, selectedId, items, channels, toneFileName, tonePreview]);
 
   const calendarDays = useMemo(() => getThirtyDays(monthStart), [monthStart]);
   const scheduledItems = useMemo(() => items.filter((item) => item.hasDeadline), [items]);
@@ -341,6 +350,27 @@ export default function App() {
     if (selectedId === itemId) setSelectedId(null);
   }
 
+  function addChannel() {
+    const name = newChannel.name.trim();
+    if (!name) return;
+    setChannels((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        name,
+        subscribers: newChannel.subscribers.trim(),
+        invested: newChannel.invested.trim(),
+        reach: newChannel.reach.trim(),
+      },
+    ]);
+    setNewChannel({ name: "", subscribers: "", invested: "", reach: "" });
+    setActivity(`Канал ${name} добавлен`);
+  }
+
+  function removeChannel(channelId) {
+    setChannels((prev) => prev.filter((channel) => channel.id !== channelId));
+  }
+
   if (!projectLogin) {
     return (
       <div className="min-h-screen bg-slate-50 p-6 text-slate-900">
@@ -405,6 +435,15 @@ export default function App() {
           </div>
         </section>
 
+        <section className="rounded-3xl bg-white p-3 shadow-sm">
+          <div className="flex flex-wrap gap-2">
+            <Button active={currentTab === "content"} onClick={() => setCurrentTab("content")}>Контент-план</Button>
+            <Button active={currentTab === "channels"} onClick={() => setCurrentTab("channels")}>Каналы</Button>
+          </div>
+        </section>
+
+        {currentTab === "content" && (
+          <>
         <section className="flex flex-col justify-between gap-4 rounded-3xl bg-white p-5 shadow-sm md:flex-row md:items-center">
           <div>
             <div className="text-sm text-slate-500">Календарь проекта</div>
@@ -624,6 +663,81 @@ export default function App() {
             ))}
           </aside>
         </main>
+          </>
+        )}
+
+        {currentTab === "channels" && (
+          <section className="grid gap-6 lg:grid-cols-[0.95fr_1.4fr]">
+            <div className="rounded-3xl bg-white p-6 shadow-sm">
+              <div className="mb-4">
+                <div className="text-lg font-semibold">Добавить канал</div>
+                <div className="text-sm text-slate-500">Веди здесь сетку каналов по проекту.</div>
+              </div>
+
+              <div className="space-y-3">
+                <input
+                  value={newChannel.name}
+                  onChange={(e) => setNewChannel((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="Название канала"
+                  className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+                />
+                <input
+                  value={newChannel.subscribers}
+                  onChange={(e) => setNewChannel((prev) => ({ ...prev, subscribers: e.target.value }))}
+                  placeholder="Кол-во подписчиков"
+                  className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+                />
+                <input
+                  value={newChannel.invested}
+                  onChange={(e) => setNewChannel((prev) => ({ ...prev, invested: e.target.value }))}
+                  placeholder="Сколько вложено в канал"
+                  className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+                />
+                <input
+                  value={newChannel.reach}
+                  onChange={(e) => setNewChannel((prev) => ({ ...prev, reach: e.target.value }))}
+                  placeholder="Средние охваты"
+                  className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+                />
+                <Button active onClick={addChannel}>＋ Добавить канал</Button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-lg font-semibold">Сетка каналов</div>
+                  <div className="text-sm text-slate-500">Подписчики, вложения и средние охваты по каждому каналу.</div>
+                </div>
+                <div className="rounded-2xl bg-slate-100 px-4 py-2 text-sm text-slate-600">Каналов: {channels.length}</div>
+              </div>
+
+              <div className="space-y-3">
+                {channels.length === 0 && (
+                  <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+                    Пока пусто. Добавь первый канал.
+                  </div>
+                )}
+
+                {channels.map((channel) => (
+                  <div key={channel.id} className="rounded-2xl border border-slate-200 p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-lg font-semibold">{channel.name}</div>
+                        <div className="mt-3 grid gap-2 text-sm text-slate-600 md:grid-cols-3">
+                          <div><span className="text-slate-400">Подписчики:</span> {channel.subscribers || "—"}</div>
+                          <div><span className="text-slate-400">Вложено:</span> {channel.invested || "—"}</div>
+                          <div><span className="text-slate-400">Охваты:</span> {channel.reach || "—"}</div>
+                        </div>
+                      </div>
+                      <button onClick={() => removeChannel(channel.id)} className="text-sm text-red-500 hover:text-red-700">Удалить</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
