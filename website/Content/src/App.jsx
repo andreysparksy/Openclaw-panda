@@ -4,6 +4,7 @@ const platforms = ["Telegram", "VK"];
 const workflowStatuses = ["Идея", "Черновик", "Чистовик"];
 const dayNames = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"];
 const CONTENT_STORAGE_PREFIX = "content-studio-v3";
+const LEGACY_CONTENT_STORAGE_PREFIX = "content-studio-v2";
 const ACTIVE_LOGIN_KEY = "content-studio-active-login";
 const allowedProjects = ["PANDAVKADS"];
 
@@ -76,6 +77,10 @@ function getStorageKey(login) {
   return `${CONTENT_STORAGE_PREFIX}-${login}`;
 }
 
+function getLegacyStorageKey(login) {
+  return `${LEGACY_CONTENT_STORAGE_PREFIX}-${login}`;
+}
+
 function createChannelState() {
   return {
     items: [],
@@ -98,7 +103,32 @@ function readProjectState(login) {
   if (typeof window === "undefined" || !login) return getInitialProjectState(login);
   try {
     const raw = window.localStorage.getItem(getStorageKey(login));
-    if (!raw) return getInitialProjectState(login);
+    if (!raw) {
+      const legacyRaw = window.localStorage.getItem(getLegacyStorageKey(login));
+      if (!legacyRaw) return getInitialProjectState(login);
+      const legacy = JSON.parse(legacyRaw);
+      const defaultChannelId = Date.now();
+      return {
+        projectLogin: login,
+        activeChannelId: defaultChannelId,
+        channels: [
+          {
+            id: defaultChannelId,
+            name: "Основной канал",
+            subscribers: "",
+            invested: "",
+            reach: "",
+            content: {
+              monthStart: legacy.monthStart || getDefaultMonthStart().toISOString(),
+              selectedId: legacy.selectedId || null,
+              items: deserializeItems(legacy.items || []),
+              toneFileName: legacy.toneFileName || "",
+              tonePreview: legacy.tonePreview || "",
+            },
+          },
+        ],
+      };
+    }
     const parsed = JSON.parse(raw);
     return {
       ...getInitialProjectState(login),
