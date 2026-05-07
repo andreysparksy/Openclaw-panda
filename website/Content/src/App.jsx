@@ -215,6 +215,13 @@ export default function App() {
   );
   const monthlyGap = Math.max(0, 10 - postsIn30Days.length);
 
+  useEffect(() => {
+    if (!activeChannel) return;
+    if (!selectedId && items.length > 0) {
+      updateActiveChannelContent({ selectedId: items[0].id });
+    }
+  }, [activeChannelId, items.length]);
+
   function updateActiveChannelContent(patch) {
     if (!activeChannel) return;
     setChannels((prev) =>
@@ -229,7 +236,7 @@ export default function App() {
   function patchSelected(patch) {
     if (!selected || !activeChannel) return;
     const nextItems = items.map((item) => (item.id === selected.id ? { ...item, ...patch } : item));
-    updateActiveChannelContent({ items: nextItems });
+    updateActiveChannelContent({ items: nextItems, selectedId: selected.id });
   }
 
   function handleProjectLogin() {
