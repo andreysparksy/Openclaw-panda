@@ -24,6 +24,13 @@ function formatShortDate(date) {
   return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" });
 }
 
+function getMonthEnd(start) {
+  const end = new Date(start);
+  end.setMonth(end.getMonth() + 1);
+  end.setDate(0);
+  return end;
+}
+
 function getThirtyDays(start) {
   return Array.from({ length: 30 }, (_, i) => {
     const d = new Date(start);
@@ -35,6 +42,7 @@ function getThirtyDays(start) {
 function getDefaultMonthStart() {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
+  now.setDate(1);
   return now;
 }
 
@@ -192,6 +200,7 @@ export default function App() {
   const activeChannel = useMemo(() => channels.find((channel) => channel.id === activeChannelId) || null, [channels, activeChannelId]);
   const contentState = activeChannel?.content || createChannelState();
   const monthStart = useMemo(() => new Date(contentState.monthStart || getDefaultMonthStart().toISOString()), [contentState.monthStart]);
+  const monthEnd = useMemo(() => getMonthEnd(monthStart), [monthStart]);
   const items = contentState.items || [];
   const selectedId = contentState.selectedId || null;
   const toneFileName = contentState.toneFileName || "";
@@ -290,7 +299,8 @@ export default function App() {
 
   function shiftMonth(delta) {
     const next = new Date(monthStart);
-    next.setDate(next.getDate() + delta * 30);
+    next.setMonth(next.getMonth() + delta);
+    next.setDate(1);
     updateActiveChannelContent({ monthStart: next.toISOString(), selectedId: null });
   }
 
@@ -546,7 +556,7 @@ export default function App() {
             <section className="flex flex-col justify-between gap-4 rounded-3xl bg-white p-5 shadow-sm md:flex-row md:items-center">
               <div>
                 <div className="text-sm text-slate-500">Календарь канала</div>
-                <div className="text-lg font-semibold">{formatDate(calendarDays[0])} — {formatDate(calendarDays[29])}</div>
+                <div className="text-lg font-semibold">{formatDate(monthStart)} — {formatDate(monthEnd)}</div>
                 {monthlyGap > 0 && <div className="mt-2 text-sm text-amber-600">⚠️ В 30-дневном окне не хватает {monthlyGap} постов до базового ритма.</div>}
               </div>
               <div className="flex flex-wrap gap-2">
