@@ -6,7 +6,7 @@ const dayNames = ["Понедельник", "Вторник", "Среда", "Ч�
 const CONTENT_STORAGE_PREFIX = "content-studio-v3";
 const LEGACY_CONTENT_STORAGE_PREFIX = "content-studio-v2";
 const ACTIVE_LOGIN_KEY = "content-studio-active-login";
-const allowedProjects = ["PANDAVKADS"];
+const allowedProjects = ["PANDAVKADS", "Шаха"];
 
 const seedIdeas = [
   ["Как не сливать идеи в заметки, а доводить до публикации", "Показать, как проекту нужен не хаос идей, а понятный контент-план", ["Telegram", "VK"]],
@@ -94,6 +94,7 @@ function createChannelState() {
     items: [],
     monthStart: getDefaultMonthStart().toISOString(),
     selectedId: null,
+    isEditingItem: false,
     toneFileName: "",
     tonePreview: "",
   };
@@ -203,6 +204,7 @@ export default function App() {
   const monthEnd = useMemo(() => getMonthEnd(monthStart), [monthStart]);
   const items = contentState.items || [];
   const selectedId = contentState.selectedId || null;
+  const isEditingItem = contentState.isEditingItem || false;
   const toneFileName = contentState.toneFileName || "";
   const tonePreview = contentState.tonePreview || "";
   const calendarDays = useMemo(() => getThirtyDays(monthStart), [monthStart]);
@@ -434,6 +436,15 @@ export default function App() {
     updateActiveChannelContent({ items: items.filter((item) => item.id !== itemId), selectedId: selectedId === itemId ? null : selectedId });
   }
 
+  function startEditingItem() {
+    if (!selected) return;
+    updateActiveChannelContent({ isEditingItem: true, selectedId: selected.id });
+  }
+
+  function stopEditingItem() {
+    updateActiveChannelContent({ isEditingItem: false });
+  }
+
   if (!projectLogin) {
     return (
       <div className="min-h-screen bg-slate-50 p-6 text-slate-900">
@@ -441,7 +452,7 @@ export default function App() {
           <div className="w-full rounded-3xl bg-white p-8 shadow-sm">
             <div className="mb-3 inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm">✨ PANDAPOST</div>
             <h1 className="text-3xl font-bold tracking-tight">Вход в проект</h1>
-            <p className="mt-3 text-sm text-slate-500">Сейчас доступен один логин проекта: PANDAVKADS</p>
+            <p className="mt-3 text-sm text-slate-500">Сейчас доступны логины проекта: PANDAVKADS и Шаха</p>
             <div className="mt-5 flex gap-2">
               <input
                 value={projectLoginInput}
@@ -625,10 +636,15 @@ export default function App() {
                     <div className="flex flex-col justify-between gap-4 md:flex-row">
                       <div className="flex-1">
                         <div className="text-sm text-slate-500">{selected.hasDeadline ? `${selected.dayName}, ${formatDate(selected.date)}` : "Без даты публикации"}</div>
-                        <textarea value={selected.idea} onChange={(e) => patchSelected({ idea: e.target.value })} className="mt-2 w-full rounded-2xl border border-slate-300 p-3 text-xl font-semibold" rows={2} />
-                        <textarea value={selected.angle} onChange={(e) => patchSelected({ angle: e.target.value })} className="mt-2 w-full rounded-2xl border border-slate-300 p-3 text-sm text-slate-600" rows={2} />
+                        <textarea value={selected.idea} onChange={(e) => patchSelected({ idea: e.target.value })} readOnly={!isEditingItem} className="mt-2 w-full rounded-2xl border border-slate-300 p-3 text-xl font-semibold" rows={2} />
+                        <textarea value={selected.angle} onChange={(e) => patchSelected({ angle: e.target.value })} readOnly={!isEditingItem} className="mt-2 w-full rounded-2xl border border-slate-300 p-3 text-sm text-slate-600" rows={2} />
                       </div>
                       <div className="flex flex-col gap-2">
+                        {isEditingItem ? (
+                          <Button active onClick={stopEditingItem}>Сохранить правки</Button>
+                        ) : (
+                          <Button onClick={startEditingItem}>Редактировать единицу</Button>
+                        )}
                         <Button active onClick={createDraft}>📝 Создать драфт</Button>
                         <Button onClick={() => removeItem(selected.id)}>Удалить</Button>
                       </div>
