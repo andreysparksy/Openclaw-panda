@@ -650,10 +650,16 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div>
-                      <div className="mb-2 font-semibold">Статус</div>
-                      <div className="flex flex-wrap gap-2">
-                        {workflowStatuses.map((status) => <Button key={status} active={selected.status === status} onClick={() => setStatus(status)}>{status}</Button>)}
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <div className="mb-2 font-semibold">Статус</div>
+                        <div className="flex flex-wrap gap-2">
+                          {workflowStatuses.map((status) => <Button key={status} active={selected.status === status} onClick={() => setStatus(status)}>{status}</Button>)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="mb-2 font-semibold">Дата публикации</div>
+                        <input type="date" value={selected.date.toISOString().slice(0, 10)} onChange={(e) => setPostDate(e.target.value)} className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm" />
                       </div>
                     </div>
 
@@ -665,10 +671,6 @@ export default function App() {
                             <div className="flex flex-wrap gap-2">
                               {platforms.map((p) => <Button key={p} active={selected.platforms.includes(p)} onClick={() => togglePlatform(p)}>{selected.platforms.includes(p) ? "✓ " : "+ "}{p}</Button>)}
                             </div>
-                          </div>
-                          <div>
-                            <div className="mb-2 font-semibold">Дата публикации</div>
-                            <input type="date" value={selected.date.toISOString().slice(0, 10)} onChange={(e) => setPostDate(e.target.value)} className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm" />
                           </div>
                         </div>
                         <div className="rounded-2xl bg-slate-100 p-4 text-sm text-slate-600 space-y-3">
