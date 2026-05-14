@@ -681,15 +681,16 @@ export default function App() {
                       </>
                     )}
 
-                    {selected.draft && selected.status === "Идея" && (
+                    {selected.draft && selected.status !== "Идея" && (
                       <div className="space-y-5">
                         {selected.platforms.includes("Telegram") && (
                           <div className="rounded-3xl border border-slate-200 p-4">
                             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                              <h2 className="text-xl font-bold">Telegram</h2>
+                              <h2 className="text-xl font-bold">Материал канала</h2>
+                              <div className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{selected.status === "Чистовик" ? "Готово" : "В работе"}</div>
                             </div>
                             <div className="mb-4 space-y-3 rounded-2xl bg-slate-50 p-4">
-                              <div className="font-semibold text-slate-800">Рабочие заметки</div>
+                              <div className="font-semibold text-slate-800">Заметки и доработка</div>
                               <textarea value={selected.draft.notes || ""} onChange={(e) => updateNotes(e.target.value)} placeholder="Сюда вноси тезисы, факты, мысли, куски исходников." className="min-h-[160px] w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm outline-none" />
                               <Button active onClick={addNote}>✨ Внести заметку</Button>
                             </div>
