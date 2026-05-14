@@ -687,7 +687,6 @@ export default function App() {
                           <div className="rounded-3xl border border-slate-200 p-4">
                             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                               <h2 className="text-xl font-bold">Telegram</h2>
-                              <Button active onClick={() => publish("Telegram")}>{selected.published.Telegram ? "✅ Опубликовано" : "🚀 Опубликовать"}</Button>
                             </div>
                             <div className="mb-4 space-y-3 rounded-2xl bg-slate-50 p-4">
                               <div className="font-semibold text-slate-800">Рабочие заметки</div>
@@ -712,6 +711,15 @@ export default function App() {
                                 </div>
                               </div>
                             )}
+                            <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+                              <div className="mb-2 font-semibold text-slate-800">Готовый пост</div>
+                              <textarea
+                                value={selected.draft.telegram || ""}
+                                onChange={(e) => patchSelected({ draft: { ...selected.draft, telegram: e.target.value } })}
+                                placeholder="Здесь можно редактировать готовый пост"
+                                className="min-h-[220px] w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm outline-none"
+                              />
+                            </div>
                           </div>
                         )}
                       </div>
