@@ -711,15 +711,6 @@ export default function App() {
                                 </div>
                               </div>
                             )}
-                            <div className="mt-4 rounded-2xl bg-slate-50 p-4">
-                              <div className="mb-2 font-semibold text-slate-800">Готовый пост</div>
-                              <textarea
-                                value={selected.draft.telegram || ""}
-                                onChange={(e) => patchSelected({ draft: { ...selected.draft, telegram: e.target.value } })}
-                                placeholder="Здесь можно редактировать готовый пост"
-                                className="min-h-[220px] w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm outline-none"
-                              />
-                            </div>
                           </div>
                         )}
                       </div>
