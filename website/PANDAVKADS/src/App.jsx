@@ -20,11 +20,12 @@ function ArrowIcon() {
 
 function PandaPlaceholder() {
   return (
-    <div className="absolute left-[-5.8vw] top-[-2vh] z-10 hidden h-[106vh] w-[47vw] min-w-[600px] overflow-visible lg:block">
+    <div className="absolute left-[-2vw] top-[2vh] z-10 hidden h-[88vh] w-[34vw] min-w-[420px] overflow-visible lg:block">
       <img
         src={PANDA_IMAGE}
         alt="Панда с сигарой"
-        className="h-full w-auto max-w-none object-contain object-left-top drop-shadow-[0_40px_80px_rgba(0,0,0,.55)]"
+        className="h-full w-auto max-w-none object-contain object-left-top drop-shadow-[0_40px_80px_rgba(0,0,0,.55)] [image-rendering:-webkit-optimize-contrast]"
+        style={{ transform: "translateZ(0)", backfaceVisibility: "hidden" }}
       />
     </div>
   );
