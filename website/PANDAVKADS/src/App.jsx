@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import PANDA_IMAGE from "./panda.png";
+import PANDA_SECOND_IMAGE from "./panda-second.png";
 
 const navItems = ["О нас", "Кейсы", "Контакты"];
 
@@ -100,6 +101,53 @@ export default function PandavkadsHeroPreview() {
             <Button variant="secondary">Смотреть кейсы</Button>
           </div>
         </motion.div>
+      </section>
+
+      <section className="relative z-20 border-t border-white/10 px-5 py-20 sm:px-8 lg:px-[42px] lg:py-24">
+        <div className="mx-auto max-w-[1800px]">
+          <h2 className="max-w-[1520px] text-[clamp(34px,4.25vw,82px)] font-black uppercase leading-[0.92] tracking-[-0.06em] text-white">
+            PANDAVKADS — студия трафика,
+            <br />
+            основанная двумя предпринимателями
+          </h2>
+
+          <div className="mt-10 grid items-start gap-10 lg:grid-cols-[0.95fr_1.1fr_0.85fr] lg:gap-12">
+            <div style={{ fontFamily: '"Montserrat", sans-serif' }} className="max-w-[440px] space-y-8 text-[clamp(18px,1.05vw,26px)] font-medium leading-[1.42] tracking-[-0.03em] text-white/90">
+              <p>
+                Мы сами строим бизнес и понимаем, что предпринимателю нужны не просто заявки, а прибыль, окупаемость и понятная экономика.
+              </p>
+              <p>
+                За 6 лет в маркетинге мы собрали базу рабочих связок для VK Ads: креативы, офферы, аудитории и подходы, которые уже показывали результат в разных нишах.
+              </p>
+              <p>
+                Поэтому наша задача — не просто “настроить рекламу”, а найти связку, которая помогает бизнесу зарабатывать. Мы смотрим на рекламу не как подрядчик, а как предприниматели: если клиент зарабатывает больше, растет и наша ценность.
+              </p>
+            </div>
+
+            <div className="relative flex items-end justify-center">
+              <img
+                src={PANDA_SECOND_IMAGE}
+                alt="Панда в краске"
+                className="w-full max-w-[760px] object-contain drop-shadow-[0_50px_100px_rgba(0,0,0,.65)]"
+              />
+            </div>
+
+            <div className="space-y-12 pt-2 text-white">
+              {[
+                ["6+", "лет мы работаем в маркетинге"],
+                ["100+", "клиентов было у студии"],
+                ["20+", "связок по трафику"],
+              ].map(([value, label]) => (
+                <div key={value} className="space-y-2">
+                  <div className="text-[clamp(72px,7vw,138px)] font-black leading-[0.82] tracking-[-0.06em]">{value}</div>
+                  <div className="max-w-[360px] text-[clamp(24px,1.55vw,40px)] font-black uppercase leading-[0.95] tracking-[-0.045em] text-white/95">
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </section>
     </main>
   );
