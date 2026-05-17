@@ -53,7 +53,7 @@ function Button({ children, variant = "primary" }) {
 
 export default function PandavkadsHeroPreview() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050506] font-sans text-white">
+    <main className="relative min-h-screen overflow-hidden bg-[#050506] text-white" style={{ fontFamily: '"Murs Gothic", sans-serif' }}>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_4%,rgba(3,105,67,.95),transparent_34%),radial-gradient(circle_at_48%_38%,rgba(0,74,88,.42),transparent_27%),radial-gradient(circle_at_96%_53%,rgba(42,6,3,.58),transparent_32%),linear-gradient(90deg,rgba(0,0,0,.12),rgba(0,0,0,.15)_48%,rgba(0,0,0,.78))]" />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.035)_0_1px,transparent_1px)] bg-[length:100%_114px] opacity-70" />
 
