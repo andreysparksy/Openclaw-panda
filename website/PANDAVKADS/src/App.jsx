@@ -36,6 +36,7 @@ function Button({ children, variant = "primary" }) {
   return (
     <a
       href="#"
+      style={{ fontFamily: '"Montserrat", sans-serif' }}
       className={[
         "group flex h-[90px] w-full max-w-[370px] items-center justify-between px-9 text-[15px] font-medium tracking-[-0.02em] transition duration-300 md:px-10",
         isPrimary
@@ -62,7 +63,7 @@ export default function PandavkadsHeroPreview() {
       <header className="relative z-20 flex h-[108px] items-center justify-between border-b border-white/10 px-5 sm:px-8 lg:justify-end lg:px-[92px]">
         <div className="text-xl font-black tracking-[-0.06em] lg:hidden">PANDAVKADS</div>
 
-        <nav className="hidden items-center gap-10 text-[14px] text-white/75 md:flex lg:mr-11">
+        <nav className="hidden items-center gap-10 text-[14px] text-white/75 md:flex lg:mr-11" style={{ fontFamily: '"Montserrat", sans-serif' }}>
           {navItems.map((item) => (
             <a key={item} href="#" className="transition hover:text-white">
               {item}
@@ -72,6 +73,7 @@ export default function PandavkadsHeroPreview() {
 
         <a
           href="#"
+          style={{ fontFamily: '"Montserrat", sans-serif' }}
           className="hidden h-[61px] items-center justify-center bg-gradient-to-r from-[#064c6a] via-[#09b891] to-[#9bd51d] px-8 text-[14px] font-medium text-white transition hover:brightness-110 sm:flex"
         >
           Получить коммерческое
@@ -89,7 +91,7 @@ export default function PandavkadsHeroPreview() {
             PANDAVKADS
           </h1>
 
-          <p className="mt-7 max-w-[760px] text-[clamp(22px,1.54vw,31px)] font-medium leading-[1.27] tracking-[-0.035em] text-white/90">
+          <p style={{ fontFamily: '"Montserrat", sans-serif' }} className="mt-7 max-w-[760px] text-[clamp(22px,1.54vw,31px)] font-medium leading-[1.27] tracking-[-0.035em] text-white/90">
             Запускаем рекламу в VK Ads не с нуля, а на базе готовых проверенных связок: креативы, аудитории, офферы и посадочные гипотезы уже подготовлены и адаптируются под ваш проект.
           </p>
 
