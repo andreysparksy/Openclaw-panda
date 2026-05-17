@@ -103,18 +103,18 @@ export default function PandavkadsHeroPreview() {
         </motion.div>
       </section>
 
-      <section className="relative z-20 border-t border-white/10 px-5 py-20 sm:px-8 lg:px-[42px] lg:py-24">
-        <div className="mx-auto max-w-[1800px]">
-          <h2 className="max-w-[1520px] text-[clamp(34px,4.25vw,82px)] font-black uppercase leading-[0.92] tracking-[-0.06em] text-white">
-            PANDAVKADS — студия трафика,
+      <section className="relative z-20 bg-[#030303] px-4 py-16 sm:px-8 lg:px-[34px] lg:py-20">
+        <div className="mx-auto max-w-[1900px]">
+          <h2 className="text-center text-[clamp(34px,4.55vw,90px)] font-black uppercase leading-[0.88] tracking-[-0.065em] text-white">
+            PANDAVKADS — СТУДИЯ ТРАФИКА,
             <br />
-            основанная двумя предпринимателями
+            ОСНОВАННАЯ ДВУМЯ ПРЕДПРИНИМАТЕЛЯМИ
           </h2>
 
-          <div className="mt-10 grid items-start gap-10 lg:grid-cols-[0.95fr_1.1fr_0.85fr] lg:gap-12">
-            <div style={{ fontFamily: '"Montserrat", sans-serif' }} className="max-w-[440px] space-y-8 text-[clamp(18px,1.05vw,26px)] font-medium leading-[1.42] tracking-[-0.03em] text-white/90">
+          <div className="mt-10 grid items-start gap-6 lg:grid-cols-[0.8fr_1fr_0.75fr] lg:gap-6">
+            <div style={{ fontFamily: '"Montserrat", sans-serif' }} className="max-w-[430px] space-y-8 pt-8 text-[clamp(18px,1vw,25px)] font-medium leading-[1.44] tracking-[-0.03em] text-white">
               <p>
-                Мы сами строим бизнес и понимаем, что предпринимателю нужны не просто заявки, а прибыль, окупаемость и понятная экономика.
+                Мы сами строим бизнес и понимаем, что предпринимателю нужны не просто заявки, а прибыль, окупаемость и понятная экономика
               </p>
               <p>
                 За 6 лет в маркетинге мы собрали базу рабочих связок для VK Ads: креативы, офферы, аудитории и подходы, которые уже показывали результат в разных нишах.
@@ -124,23 +124,23 @@ export default function PandavkadsHeroPreview() {
               </p>
             </div>
 
-            <div className="relative flex items-end justify-center">
+            <div className="relative flex items-end justify-center lg:-mt-3">
               <img
                 src={PANDA_SECOND_IMAGE}
                 alt="Панда в краске"
-                className="w-full max-w-[760px] object-contain drop-shadow-[0_50px_100px_rgba(0,0,0,.65)]"
+                className="w-full max-w-[760px] object-contain drop-shadow-[0_55px_90px_rgba(0,0,0,.78)]"
               />
             </div>
 
-            <div className="space-y-12 pt-2 text-white">
+            <div className="space-y-12 pt-10 text-white lg:pl-2">
               {[
-                ["6+", "лет мы работаем в маркетинге"],
-                ["100+", "клиентов было у студии"],
-                ["20+", "связок по трафику"],
+                ["6+", "ЛЕТ МЫ РАБОТАЕМ В МАРКЕТИНГЕ"],
+                ["100+", "КЛИЕНТОВ БЫЛО У СТУДИИ"],
+                ["20+", "СВЯЗОК ПО ТРАФИКУ"],
               ].map(([value, label]) => (
                 <div key={value} className="space-y-2">
-                  <div className="text-[clamp(72px,7vw,138px)] font-black leading-[0.82] tracking-[-0.06em]">{value}</div>
-                  <div className="max-w-[360px] text-[clamp(24px,1.55vw,40px)] font-black uppercase leading-[0.95] tracking-[-0.045em] text-white/95">
+                  <div className="text-[clamp(86px,7.4vw,148px)] font-black leading-[0.8] tracking-[-0.07em] text-white">{value}</div>
+                  <div className="max-w-[430px] text-[clamp(24px,1.7vw,43px)] font-black uppercase leading-[0.92] tracking-[-0.045em] text-white">
                     {label}
                   </div>
                 </div>
